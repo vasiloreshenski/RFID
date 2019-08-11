@@ -1,20 +1,22 @@
 use Rfid;
 go
 
-if object_id('administration.usp_insert_tag_if_not_exists', 'P') is not null
-	drop procedure administration.usp_insert_tag_if_not_exists;
+if object_id('administration.usp_insert_or_update_tag', 'P') is not null
+	drop procedure administration.usp_insert_or_update_tag;
 go
-create procedure administration.usp_insert_tag_if_not_exists
+create procedure administration.usp_insert_or_update_tag
 	@number nvarchar(100),
 	@level_id int,
 	@is_active bit,
 	@is_deleted bit,
-	@user_id int
+	@user_id int,
+	@tag_id int output
 as
 begin
 	set nocount on;
 
-	declare @added bit = 0;
+	set @tag_id = (select top 1 x.Id from access_control.Tags as x where x.Number = @number)
+	declare @added bit = iif(@tag_id is null or @tag_id = 0, 1, 0);
 
 	if not exists(select * from access_control.Tags as x where x.Number = @number)
 	begin
@@ -22,7 +24,16 @@ begin
 		insert into access_control.Tags(IsActive, IsDeleted, LevelId, Number, UserId)
 		values(@is_active, @is_deleted, @level_id, @number, @user_id)
 
-		set @added = 1;
+		set @tag_id = SCOPE_IDENTITY();
+	end
+	else
+	begin
+		update access_control.Tags
+		-- update any of the columns if update value was provided
+		set 
+			IsActive = iif(@is_active is not null, @is_active, IsActive),
+			IsDeleted = iif(@is_deleted is not null, @is_deleted, IsDeleted),
+			UserId = iif(@user_id is not null, @user_id, UserId)
 	end
 
 	return @added;

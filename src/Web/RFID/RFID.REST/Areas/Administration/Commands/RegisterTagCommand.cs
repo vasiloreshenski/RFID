@@ -30,10 +30,10 @@
         {
             using (var transaction = await this.sqlConnectionFactory.CreateTransactionAsync())
             {
-                var userId = await this.database.GetIdOrRegisterUserAsync(model.User.Name, transaction);
-                var registered = await this.database.RegisterTagIfNotExistsAsync(model.Number, userId, model.AccessLevel, transaction);
+                var userDbResult = await this.database.RegisterUserAsync(model.User.Name, transaction);
+                var tagDbResult = await this.database.InsertTagIfNotExistsAsync(model.Number, userDbResult.Id, model.AccessLevel, transaction);
 
-                return registered;
+                return tagDbResult.IsInserted;
             }
         }
     }

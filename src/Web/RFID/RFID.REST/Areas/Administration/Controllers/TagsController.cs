@@ -13,11 +13,11 @@
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class AdministrationController : ControllerBase
+    public class TagsController : ControllerBase
     {
         private readonly AdministrationCommandFactory commandFactory;
 
-        public AdministrationController(AdministrationCommandFactory commandFactory)
+        public TagsController(AdministrationCommandFactory commandFactory)
         {
             this.commandFactory = commandFactory;
         }

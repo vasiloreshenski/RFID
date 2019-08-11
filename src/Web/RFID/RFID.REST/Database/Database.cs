@@ -19,35 +19,66 @@
         /// <param name="username">Username</param>
         /// <param name="transaction">Transaction</param>
         /// <returns></returns>
-        public async Task<int> GetIdOrRegisterUserAsync(String username, IDbTransaction transaction)
+        public async Task<InsertOrUpdDbResult> RegisterUserAsync(String username, IDbTransaction transaction)
         {
             var dynamicParams = new DynamicParameters(new { @username = username });
             dynamicParams.Add("user_id", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-            await transaction.ExecuteStoreProcedureAsync<int>(
+            var inserted = await transaction.ExecuteStoreProcedureAsync<bool>(
                 name: "[administration].[usp_insert_user_if_not_exists]",
                 param: dynamicParams
             );
-
-            return dynamicParams.Get<int>("user_id");
+            
+            return new InsertOrUpdDbResult
+            {
+                IsInserted = inserted,
+                Id = dynamicParams.Get<int>("user_id")
+            };
         }
 
         /// <summary>
-        /// Registers a tag with the specified number and access level and associated user if such tag does not exists already.
+        /// Registers a tag with the specified number and access level and associated user if such tag does not exists already
         /// </summary>
         /// <param name="number">Number of the tag</param>
         /// <param name="userId">User id</param>
         /// <param name="accessLevel">Tag access level</param>
         /// <param name="transaction">Transaction</param>
         /// <returns>True if the tag does not already exists and is added to the database</returns>
-        public async Task<bool> RegisterTagIfNotExistsAsync(String number, int userId, TagAccessLevel accessLevel, IDbTransaction transaction)
+        public Task<InsertOrUpdDbResult> InsertTagIfNotExistsAsync(String number, int userId, TagAccessLevel accessLevel, IDbTransaction transaction)
         {
-            var added = await transaction.ExecuteStoreProcedureAsync<bool>(
-                name: "[administration].[usp_insert_tag_if_not_exists]",
-                param: new { @number = number, @level_id = accessLevel, @is_active = true, @is_deleted = false, @user_id = userId }
+            return this.InsertOrUpdateTagAsync(
+                number: number,
+                userId: userId,
+                accessLevel: accessLevel,
+                isActive: true,
+                isDeleted: false,
+                transaction: transaction
+            );
+        }
+
+        
+        private async Task<InsertOrUpdDbResult> InsertOrUpdateTagAsync(
+            String number,
+            IDbTransaction transaction,
+            int? userId = null, 
+            bool? isActive = null,
+            bool? isDeleted = null,
+            TagAccessLevel? accessLevel = null)
+        {
+            var dynamicParams = new DynamicParameters(new { @number = number, @level_id = accessLevel, @is_active = isActive, @is_deleted = isDeleted, @user_id = userId });
+            dynamicParams.Add("tag_id", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+            var inserted = await transaction.ExecuteStoreProcedureAsync<bool>(
+                name: "[administration].[usp_insert_or_update_tag]",
+                param: dynamicParams
             );
 
-            return added;
+            return new InsertOrUpdDbResult
+            {
+                IsInserted = inserted,
+                IsUpdated = inserted == false,
+                Id = dynamicParams.Get<int>("tag_id")
+            };
         }
     }
 }
