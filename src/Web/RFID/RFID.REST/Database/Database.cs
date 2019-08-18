@@ -56,6 +56,29 @@
             );
         }
 
+        /// <summary>
+        /// Updates a tag with the specified values. If all values are NULL no changes made to the database
+        /// </summary>
+        /// <param name="tagId">Tag id to be updated</param>
+        /// <param name="transaction">Transaction</param>
+        /// <param name="userId">User id</param>
+        /// <param name="isActive">Is active status</param>
+        /// <param name="isDeleted">Is deleted status</param>
+        /// <param name="accessLevel">Access level</param>
+        /// <returns></returns>
+        public async Task UpdateTagAsync(
+            int tagId, 
+            IDbTransaction transaction, 
+            int? userId = null, 
+            bool? isActive = null, 
+            bool? isDeleted = null, 
+            TagAccessLevel? accessLevel = null)
+        {
+            var tagNumber = await this.GetTagNumberByIdAsync(tagId, transaction);
+
+            await this.InsertOrUpdateTagAsync(number: tagNumber, userId: userId, isActive: isActive, isDeleted: isDeleted, accessLevel: accessLevel, transaction: transaction);
+        }
+        
         
         private async Task<InsertOrUpdDbResult> InsertOrUpdateTagAsync(
             String number,
@@ -79,6 +102,11 @@
                 IsUpdated = inserted == false,
                 Id = dynamicParams.Get<int>("tag_id")
             };
+        }
+
+        private async Task<String> GetTagNumberByIdAsync(int tagId, IDbTransaction transaction)
+        {
+            return await transaction.ExecuteScalarAsync<String>("select x.Number from control_access.Tags as x where x.Id=@tagId", param: new { @tagId = tagId });
         }
     }
 }

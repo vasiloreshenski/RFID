@@ -28,5 +28,14 @@
                 commandType: CommandType.StoredProcedure
             );
         }
+
+        public static async Task<T> ExecuteScalarAsync<T>(this IDbTransaction transaction, String sql, Object param)
+        {
+            return await transaction.Connection.ExecuteScalarAsync<T>(
+                sql: sql,
+                param: param,
+                transaction: transaction
+            );
+        }
     }
 }

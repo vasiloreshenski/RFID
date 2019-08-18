@@ -15,9 +15,9 @@
     [ApiController]
     public class TagsController : ControllerBase
     {
-        private readonly AdministrationCommandFactory commandFactory;
+        private readonly CommandFactory commandFactory;
 
-        public TagsController(AdministrationCommandFactory commandFactory)
+        public TagsController(CommandFactory commandFactory)
         {
             this.commandFactory = commandFactory;
         }
@@ -43,6 +43,47 @@
             {
                 return this.BadRequest();
             }
+        }
+
+        /// <summary>
+        /// Activates the tag specified tag
+        /// </summary>
+        /// <param name="tagId">id of the tag</param>
+        /// <returns></returns>
+        [HttpPut]
+        public async Task<IActionResult> ActivateTagAsync(int tagId)
+        {
+            var command = this.commandFactory.CreateUpdateTagCommand();
+            await command.UpdateAsync(new UpdateTagRequestModel { TagId = tagId, IsActive = true });
+
+            return this.Ok();
+        }
+
+        /// <summary>
+        /// Deactivates the specified tag
+        /// </summary>
+        /// <returns></returns>
+        [HttpPut]
+        public async Task<IActionResult> DeActivateTagAsync(int tagId)
+        {
+            var command = this.commandFactory.CreateUpdateTagCommand();
+            await command.UpdateAsync(new UpdateTagRequestModel { TagId = tagId, IsActive = false });
+
+            return this.Ok();
+        }
+
+        /// <summary>
+        /// Deletes the specified tag
+        /// </summary>
+        /// <param name="tagId">id of the tag</param>
+        /// <returns></returns>
+        [HttpPut]
+        public async Task<IActionResult> DeleteTagAsync(int tagId)
+        {
+            var command = this.commandFactory.CreateUpdateTagCommand();
+            await command.UpdateAsync(new UpdateTagRequestModel { TagId = tagId, IsDeleted = true });
+
+            return this.Ok();
         }
     }
 }

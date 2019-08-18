@@ -9,12 +9,12 @@
     /// <summary>
     /// Factory for creating administration related commands
     /// </summary>
-    public class AdministrationCommandFactory
+    public class CommandFactory
     {
         private readonly SqlConnectionFactory sqlConnectionFactory;
         private readonly Database database;
 
-        public AdministrationCommandFactory(SqlConnectionFactory sqlConnectionFactory, Database database)
+        public CommandFactory(SqlConnectionFactory sqlConnectionFactory, Database database)
         {
             this.sqlConnectionFactory = sqlConnectionFactory;
             this.database = database;
@@ -27,6 +27,15 @@
         public RegisterTagCommand CreateRegisterTagCommand()
         {
             return new RegisterTagCommand(this.sqlConnectionFactory, this.database);
+        }
+
+        /// <summary>
+        /// Creates new instance of the <see cref="UpdateTagCommand"/>
+        /// </summary>
+        /// <returns></returns>
+        public UpdateTagCommand CreateUpdateTagCommand()
+        {
+            return new UpdateTagCommand(this.sqlConnectionFactory, this.database);
         }
     }
 }
