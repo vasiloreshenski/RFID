@@ -16,17 +16,39 @@ go
 
 -- create level types
 
-create table access_control.TagLevelTypes
+create table access_control.AccessLevels
 (
 	Id int not null identity(1, 1),
 	[Name] nvarchar(100) not null
 
-	constraint PK_access_control_TagLevelTypes primary key(Id)
+	constraint PK_access_control_AccessLevel primary key(Id)
 );
 go
 
-create index idx_access_control_TagLevelTypes on access_control.TagLevelTypes([Name]);
+create index idx_access_control_AccessLevel on access_control.AccessLevels([Name]);
 go
+
+insert into access_control.AccessLevels([Name]) values ('Low'), ('Mid'), ('High');
+go
+
+-- create access points
+create table access_control.AccessPoints
+(
+	Id int not null identity(1, 1),
+	[Description] nvarchar(max) not null,
+	Identifier uniqueidentifier not null,
+	LevelId int not null
+
+	constraint PK_access_control_AccesPoints primary key (Id),
+	constraint FK_access_control_AccessPoints_Access_Level foreign key (LevelId) references access_control.AccessLevels(Id)
+);
+go
+
+create unique index uidx_access_control_AccessPoints_Identifier on access_control.AccessPoints(Identifier);
+create index idx_access_control_AccessPoints_LevelId on access_control.AccessPoints(LevelId);
+go
+
+
 
 -- create Tag users
 
@@ -57,7 +79,7 @@ create table access_control.Tags
 	UserId int not null
 
 	constraint PK_access_control_Tags primary key(Id),
-	constraint FK_access_control_Tags_TagLevelTypes foreign key(LevelId) references access_control.TagLevelTypes(Id),
+	constraint FK_access_control_Tags_AccessLevel foreign key(LevelId) references access_control.AccessLevels(Id),
 	constraint FK_access_control_Tags_Users foreign key(UserId) references access_control.Users(Id)
 );
 go

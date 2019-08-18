@@ -28,7 +28,7 @@
         /// </summary>
         /// <param name="open">If true opens the connection asynchronously</param>
         /// <returns></returns>
-        public async Task<IDbConnection> CreateConnectionAsync(bool open)
+        public async Task<IDbConnection> CreateConnectionAsync(bool open = false)
         {
             var connection = new SqlConnection(this.connectionString.Value);
             if (open)

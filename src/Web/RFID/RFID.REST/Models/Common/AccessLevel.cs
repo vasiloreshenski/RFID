@@ -5,7 +5,7 @@
     using System.Linq;
     using System.Threading.Tasks;
 
-    public enum TagAccessLevel
+    public enum AccessLevel
     {
         Low = 1,
         Mid = 2,

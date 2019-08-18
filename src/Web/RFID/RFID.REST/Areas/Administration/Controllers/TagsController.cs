@@ -30,7 +30,7 @@
         /// 200 OK if the model was registered successfully. 
         /// 400 if the request model is not valid or the tag is already registered.
         /// </returns>
-        [HttpPost]
+        [HttpPost("/register")]
         public async Task<IActionResult> RegisterTagAsync(RegisterTagRequestModel model)
         {
             var command = this.commandFactory.CreateRegisterTagCommand();
@@ -50,7 +50,7 @@
         /// </summary>
         /// <param name="tagId">id of the tag</param>
         /// <returns></returns>
-        [HttpPut]
+        [HttpPatch("/activate")]
         public async Task<IActionResult> ActivateTagAsync(int tagId)
         {
             var command = this.commandFactory.CreateUpdateTagCommand();
@@ -63,7 +63,7 @@
         /// Deactivates the specified tag
         /// </summary>
         /// <returns></returns>
-        [HttpPut]
+        [HttpPatch("/deactivate")]
         public async Task<IActionResult> DeActivateTagAsync(int tagId)
         {
             var command = this.commandFactory.CreateUpdateTagCommand();
@@ -77,7 +77,7 @@
         /// </summary>
         /// <param name="tagId">id of the tag</param>
         /// <returns></returns>
-        [HttpPut]
+        [HttpPatch("delete")]
         public async Task<IActionResult> DeleteTagAsync(int tagId)
         {
             var command = this.commandFactory.CreateUpdateTagCommand();
