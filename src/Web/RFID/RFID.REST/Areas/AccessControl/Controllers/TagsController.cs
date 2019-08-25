@@ -14,6 +14,7 @@
     /// Controller used for access control checks
     /// </summary>
     [Route("api/[controller]")]
+    [Area("access_control")]
     [ApiController]
     [AllowAnonymous]
     public class TagsController : ControllerBase

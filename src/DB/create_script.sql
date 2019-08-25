@@ -37,6 +37,9 @@ create table access_control.AccessPoints
 	Id int not null identity(1, 1),
 	[Description] nvarchar(max) not null,
 	Identifier uniqueidentifier not null,
+	IsActive bit not null,
+	CreateDate datetime2 not null default(GETDATE()),
+	ModificationDate datetime2 null,
 	LevelId int not null
 
 	constraint PK_access_control_AccesPoints primary key (Id),
@@ -48,7 +51,14 @@ create unique index uidx_access_control_AccessPoints_Identifier on access_contro
 create index idx_access_control_AccessPoints_LevelId on access_control.AccessPoints(LevelId);
 go
 
-
+create trigger tr_access_control_AccessPoints_ModificationDate 
+on access_control.AccessPoints
+after update
+as
+	update access_control.AccessPoints
+	set ModificationDate = GETDATE()
+	where Id in (select x.Id from inserted as x)
+go
 
 -- create Tag users
 

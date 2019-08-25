@@ -22,7 +22,7 @@
         /// Level of access for the current tag
         /// </summary>
         [Required]
-        public TagAccessLevel AccessLevel { get; set; }
+        public AccessLevel AccessLevel { get; set; }
 
         /// <summary>
         /// User associated with the current tag

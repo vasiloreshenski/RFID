@@ -37,5 +37,7 @@
                 transaction: transaction
             );
         }
+
+        public static int Identity(this DynamicParameters dparams) => dparams.Get<int>("identity");
     }
 }

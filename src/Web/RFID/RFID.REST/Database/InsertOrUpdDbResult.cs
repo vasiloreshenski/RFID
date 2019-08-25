@@ -10,6 +10,21 @@
     /// </summary>
     public class InsertOrUpdDbResult
     {
+        public static InsertOrUpdDbResult Create(int id, bool isInserted)
+        {
+            return new InsertOrUpdDbResult
+            {
+                Id = id,
+                IsInserted = isInserted,
+                IsUpdated = isInserted == false && id != default
+            };
+        }
+
+        /// <summary>
+        /// Represents not updated and not inserted state
+        /// </summary>
+        public static InsertOrUpdDbResult NotFound => Create(0, false);
+
         /// <summary>
         /// Identity of the table
         /// </summary>

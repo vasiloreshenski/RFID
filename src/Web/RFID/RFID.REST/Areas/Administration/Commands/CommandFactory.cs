@@ -37,5 +37,14 @@
         {
             return new UpdateTagCommand(this.sqlConnectionFactory, this.database);
         }
+
+        /// <summary>
+        /// Creates new instance of the <see cref="RegisterOrUpdateAccessPointCommand"/>
+        /// </summary>
+        /// <returns></returns>
+        public RegisterOrUpdateAccessPointCommand CreateRegisterOrUpdateAccessPoint()
+        {
+            return new RegisterOrUpdateAccessPointCommand(this.sqlConnectionFactory, this.database);
+        }
     }
 }

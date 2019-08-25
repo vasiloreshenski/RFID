@@ -11,7 +11,7 @@
     /// Command for registering new tags
     /// </summary>
     public class RegisterTagCommand
-    {
+    {   
         private readonly SqlConnectionFactory sqlConnectionFactory;
         private readonly Database database;
 

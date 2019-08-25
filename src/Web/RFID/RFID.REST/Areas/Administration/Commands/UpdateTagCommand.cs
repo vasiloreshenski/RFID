@@ -25,12 +25,16 @@
         /// <summary>
         /// Updates the specified tag
         /// </summary>
-        /// <returns></returns>
-        public async Task UpdateAsync(UpdateTagRequestModel model)
+        /// <returns>
+        /// True if the tag was found and updated or false if the tag was not found
+        /// </returns>
+        public async Task<bool> UpdateAsync(UpdateTagRequestModel model)
         {
             using (var transaction = await this.sqlConnectionFactory.CreateTransactionAsync())
             {
-                await this.database.UpdateTagAsync(tagId: model.TagId, userId: model.UserId, isActive: model.IsActive, isDeleted: model.IsDeleted, accessLevel: model.AccessLevel, transaction: transaction);
+                var dbResult = await this.database.UpdateTagAsync(tagId: model.TagId, userId: model.UserId, isActive: model.IsActive, isDeleted: model.IsDeleted, accessLevel: model.AccessLevel, transaction: transaction);
+
+                return dbResult.IsUpdated;
             }
         }
     }

@@ -10,21 +10,21 @@ create procedure administration.usp_insert_or_update_tag
 	@is_active bit,
 	@is_deleted bit,
 	@user_id int,
-	@tag_id int output
+	@identity int output
 as
 begin
 	set nocount on;
 
-	set @tag_id = (select top 1 x.Id from access_control.Tags as x where x.Number = @number)
-	declare @added bit = iif(@tag_id is null or @tag_id = 0, 1, 0);
+	set @identity = (select top 1 x.Id from access_control.Tags as x where x.Number = @number)
+	declare @added bit = iif(@identity is null or @identity = 0, 1, 0);
 
-	if not exists(select * from access_control.Tags as x where x.Number = @number)
+	if @added = 1
 	begin
 		-- modification date is updated with trigger after update of the row
 		insert into access_control.Tags(IsActive, IsDeleted, LevelId, Number, UserId)
 		values(@is_active, @is_deleted, @level_id, @number, @user_id)
 
-		set @tag_id = SCOPE_IDENTITY();
+		set @identity = SCOPE_IDENTITY();
 	end
 	else
 	begin
@@ -45,18 +45,54 @@ if object_id('administration.usp_insert_user_if_not_exists', 'P') is not null
 go
 create procedure administration.usp_insert_user_if_not_exists
 	@username nvarchar(400),
-	@user_id int output
+	@identity int output
 as
 begin	
 	set nocount on;
 
-	set @user_id = (select top 1 x.Name from access_control.Users as x where x.Name = @username);
-	declare @added bit = iif(@user_id is not null and @user_id <> 0, 1, 0);
+	set @identity = (select top 1 x.Name from access_control.Users as x where x.Name = @username);
+	declare @added bit = iif(@identity is not null and @identity <> 0, 1, 0);
 
-	if @user_id is null or @user_id = 0
+	if @identity is null or @identity = 0
 	begin
 		insert into access_control.Users([Name]) values(@username);
-		set @user_id = SCOPE_IDENTITY();
+		set @identity = SCOPE_IDENTITY();
+	end
+
+	return @added;
+end;
+go
+
+if object_id('administration.usp_insert_or_update_access_point', 'P') is not null
+	drop procedure administration.usp_insert_or_update_access_point;
+go
+
+create procedure administration.usp_insert_or_update_access_point
+	@identifier uniqueidentifier,
+	@description nvarchar(max),
+	@is_active bit,
+	@level_id int,
+	@identity int output
+as
+begin
+	set nocount on;
+	
+	set @identity = (select top 1 x.Id from access_control.AccessPoints as x where x.Identifier = @identifier);
+	declare @added bit = iif(@identity is null or @identity = 0, 1, 0);
+
+	if @added = 1
+	begin
+		insert into access_control.AccessPoints(Identifier, [Description], IsActive, LevelId) 
+		values(@identifier, @description, @is_active, @level_id);
+		set @identity = SCOPE_IDENTITY();
+	end
+	else
+	begin
+		update access_control.AccessPoint
+			set
+				[Description] = iif(@description is not null, @description, [Description]),
+				[IsActive] = iif(@is_active is not null, @is_active, IsActive),
+				[LevelId] = iif(@level_id is not null, @level_id, LevelId)
 	end
 
 	return @added;

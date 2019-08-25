@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <Folder Include="Areas\AccessControl\Data\" />
-    <Folder Include="Areas\AccessControl\Models\" />
     <Folder Include="Areas\AccessControl\Commands\" />
     <Folder Include="Areas\Administration\Data\" />
     <Folder Include="wwwroot\" />
