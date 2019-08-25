@@ -1,4 +1,4 @@
-﻿namespace RFID.REST.Models.Common
+﻿namespace RFID.REST.Models
 {
     using System;
     using System.Collections.Generic;

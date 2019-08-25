@@ -30,7 +30,7 @@
         {
             using (var transaction = await this.sqlConnectionFactory.CreateTransactionAsync())
             {
-                var userDbResult = await this.database.RegisterUserAsync(model.User.Name, transaction);
+                var userDbResult = await this.database.InsertAccessPointUserAsync(model.User.Name, transaction);
                 var tagDbResult = await this.database.InsertTagIfNotExistsAsync(model.Number, userDbResult.Id, model.AccessLevel, transaction);
 
                 return tagDbResult.IsInserted;

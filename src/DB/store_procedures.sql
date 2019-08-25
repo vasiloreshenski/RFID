@@ -1,9 +1,34 @@
 use Rfid;
 go
 
+if object_id('administration.usp_insert_user', 'P') is not null
+	drop procedure administration.usp_insert_user;
+go
+
 if object_id('administration.usp_insert_or_update_tag', 'P') is not null
 	drop procedure administration.usp_insert_or_update_tag;
 go
+
+if object_id('administration.usp_insert_user_if_not_exists', 'P') is not null
+	drop procedure administration.usp_insert_user_if_not_exists;
+go
+
+if object_id('administration.usp_insert_or_update_access_point', 'P') is not null
+	drop procedure administration.usp_insert_or_update_access_point;
+go
+
+
+if type_id ('dbo.IntList') is not null
+	drop type dbo.IntList;
+go
+
+create type dbo.IntList as table
+(
+	[Value] int
+);
+go
+
+
 create procedure administration.usp_insert_or_update_tag
 	@number nvarchar(100),
 	@level_id int,
@@ -40,9 +65,6 @@ begin
 end;
 go
 
-if object_id('administration.usp_insert_user_if_not_exists', 'P') is not null
-	drop procedure administration.usp_insert_user_if_not_exists;
-go
 create procedure administration.usp_insert_user_if_not_exists
 	@username nvarchar(400),
 	@identity int output
@@ -61,10 +83,6 @@ begin
 
 	return @added;
 end;
-go
-
-if object_id('administration.usp_insert_or_update_access_point', 'P') is not null
-	drop procedure administration.usp_insert_or_update_access_point;
 go
 
 create procedure administration.usp_insert_or_update_access_point
@@ -96,5 +114,24 @@ begin
 	end
 
 	return @added;
+end;
+go
+
+create procedure administration.usp_insert_user
+	@email nvarchar(400),
+	@password_hash nvarchar(max),
+	@roles dbo.IntList readonly,
+	@identity int output
+as
+begin
+	insert into administration.Users(Email, PasswordHash) values (@email, @password_hash)
+
+	set @identity = SCOPE_IDENTITY();
+
+	insert into administration.UsersReles(UserId, RoleId)
+	select
+		@identity,
+		r.[Value]
+	from @roles as r
 end;
 go

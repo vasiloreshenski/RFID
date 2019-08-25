@@ -1,12 +1,12 @@
 ﻿namespace RFID.REST.Database
 {
-    using RFID.REST.Models.Common;
     using System;
     using System.Collections.Generic;
     using System.Data;
     using System.Linq;
     using System.Threading.Tasks;
     using Dapper;
+    using RFID.REST.Models;
 
     /// <summary>
     /// Class used to encapsulate the communication with the database stored procedures
@@ -26,7 +26,7 @@
         /// <param name="username">Username</param>
         /// <param name="transaction">Transaction</param>
         /// <returns></returns>
-        public async Task<InsertOrUpdDbResult> RegisterUserAsync(String username, IDbTransaction transaction)
+        public async Task<InsertOrUpdDbResult> InsertAccessPointUserAsync(String username, IDbTransaction transaction)
         {
             var dynamicParams = new DynamicParameters(new { @username = username });
             dynamicParams.Add("user_id", dbType: DbType.Int32, direction: ParameterDirection.Output);
@@ -137,6 +137,23 @@
             return InsertOrUpdDbResult.Create(param.Identity(), isInserted);
         }
 
+        /// <summary>
+        /// Insert administration user
+        /// </summary>
+        /// <param name="email">email</param>
+        /// <param name="passwordHash">password hash</param>
+        /// <param name="roles">roles</param>
+        /// <param name="transaction">transaction</param>
+        /// <returns></returns>
+        public async Task<InsertOrUpdDbResult> InsertAdministrationUserAsync(String email, String passwordHash, IReadOnlyCollection<Areas.User.Models.UserRole> roles, IDbTransaction transaction)
+        {
+            var param = new DynamicParameters(new { @email = email, @password_hash = passwordHash, @roles = AsIntList(roles.Ints()) });
+            param.Add("identity", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+            await transaction.ExecuteStoreProcedureAsync("administration.usp_insert_user", param: param);
+
+            return InsertOrUpdDbResult.Create(param.Identity(), true);
+        }
 
         private async Task<InsertOrUpdDbResult> InsertOrUpdateTagAsync(
             String number,
@@ -160,6 +177,20 @@
         private async Task<String> GetTagNumberByIdAsync(int tagId, IDbTransaction transaction)
         {
             return await transaction.ExecuteScalarAsync<String>("select x.Number from control_access.Tags as x where x.Id=@tagId", param: new { @tagId = tagId });
+        }
+
+
+        private SqlMapper.ICustomQueryParameter AsIntList(IReadOnlyCollection<int> values)
+        {
+            var datatable = new DataTable();
+            datatable.Columns.Add("Value", typeof(int));
+
+            foreach (var value in values)
+            {
+                datatable.Rows.Add(value);
+            }
+
+            return datatable.AsTableValuedParameter("dbo.IntList");
         }
     }
 }

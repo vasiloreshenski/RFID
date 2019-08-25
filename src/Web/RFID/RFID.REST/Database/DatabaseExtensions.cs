@@ -4,6 +4,7 @@
     using System;
     using System.Collections.Generic;
     using System.Data;
+    using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -39,5 +40,10 @@
         }
 
         public static int Identity(this DynamicParameters dparams) => dparams.Get<int>("identity");
+
+        public static IReadOnlyCollection<int> Ints<T>(this IReadOnlyCollection<T> enums) where T: struct, IConvertible
+        {
+            return enums.Select(x => x.ToInt32(CultureInfo.InvariantCulture)).ToList();
+        }
     }
 }

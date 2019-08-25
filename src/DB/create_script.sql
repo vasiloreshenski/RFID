@@ -151,3 +151,57 @@ go
 
 create schema administration;
 go
+
+-- create user roles
+
+create table administration.Roles
+(
+	Id int not null,
+	[Name] nvarchar(400) not null,
+
+	constraint PK_administration_Roles primary key (id)
+);
+go
+
+create unique index uidx_administration_Roles_Name on administration.Roles([Name]);
+go
+
+insert into administration.Roles([Name]) values ('Admin');
+go
+
+-- create users
+
+create table administration.Users
+(
+	Id int not null,
+	Email nvarchar(400) not null,
+	PasswordHash nvarchar(max) not null,
+	CreateDate datetime2 not null default(GETDATE()),
+	ModificationDate datetime2 null
+
+	constraint PK_administration_Users primary key(Id),
+);
+go
+
+create unique index uidx_administration_Users_Email on administration.Users(Email);
+go
+
+create trigger tr_administration_Users_ModificationDate
+on administration.Users
+after update
+as
+	update administration.Users
+	set ModificationDate = GETDATE()
+	where Id in (select i.Id from inserted as i);
+go
+
+-- create user - user roles relation
+
+create table administration.UsersRoles
+(
+	UserId int not null,
+	RoleId int not null,
+
+	constraint PK_administration_UserRoles primary key(UserId, RoleId)
+);
+go
