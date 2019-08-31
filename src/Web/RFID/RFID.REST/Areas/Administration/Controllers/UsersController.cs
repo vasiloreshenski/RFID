@@ -10,23 +10,23 @@
     using System.Threading.Tasks;
 
     [ApiController]
-    [Route("/api/auth_users")]
+    [Route("/api/users")]
     [Area("Administration")]
     [Authorize]
-    public class AuthUsersController : ControllerBase
+    public class UsersController : ControllerBase
     {
         private readonly Areas.Administration.Commands.CommandFactory commandFactory;
 
-        public AuthUsersController(Areas.Administration.Commands.CommandFactory commandFactory)
+        public UsersController(Areas.Administration.Commands.CommandFactory commandFactory)
         {
             this.commandFactory = commandFactory;
         }
 
         [HttpPost("/register")]
         [AllowAnonymous]
-        public async Task<IActionResult> RegisterAsync(RegisterAuthUserRequestModel model)
+        public async Task<IActionResult> RegisterAsync(RegisterAdministrationUserRequestModel model)
         {
-            var command = this.commandFactory.CreateRegisterUserCommand();
+            var command = this.commandFactory.CreateRegisterAdministrationUserCommand();
             await command.RegisterAsync(model);
 
             return this.Ok();

@@ -11,13 +11,13 @@
     /// <summary>
     /// Registers a new administration user
     /// </summary>
-    public class RegisterAuthUserCommand
+    public class RegisterAdministrationUserCommand
     {
         private readonly SqlConnectionFactory sqlConnectionFactory;
         private readonly Database database;
-        private readonly IPasswordHasher<AuthUser> passwordHasher;
+        private readonly IPasswordHasher<AdministrationUser> passwordHasher;
 
-        public RegisterAuthUserCommand(SqlConnectionFactory sqlConnectionFactory, Database database, IPasswordHasher<AuthUser> passwordHasher)
+        public RegisterAdministrationUserCommand(SqlConnectionFactory sqlConnectionFactory, Database database, IPasswordHasher<AdministrationUser> passwordHasher)
         {
             this.sqlConnectionFactory = sqlConnectionFactory;
             this.database = database;
@@ -29,7 +29,7 @@
         /// </summary>
         /// <param name="model">user model to be registered</param>
         /// <returns></returns>
-        public async Task RegisterAsync(RegisterAuthUserRequestModel model)
+        public async Task RegisterAsync(RegisterAdministrationUserRequestModel model)
         {
             using (var transaction = await this.sqlConnectionFactory.CreateTransactionAsync())
             {

@@ -8,9 +8,9 @@
     /// <summary>
     /// Domain model for the user
     /// </summary>
-    public class AuthUser
+    public class AdministrationUser
     {
-        public AuthUser(String email, IReadOnlyCollection<AuthUserRole> roles)
+        public AdministrationUser(String email, IReadOnlyCollection<AdministrationUserRole> roles)
         {
             this.Email = email;
             this.Roles = roles;
@@ -24,6 +24,6 @@
         /// <summary>
         /// Roles
         /// </summary>
-        public IReadOnlyCollection<AuthUserRole> Roles { get; }
+        public IReadOnlyCollection<AdministrationUserRole> Roles { get; }
     }
 }

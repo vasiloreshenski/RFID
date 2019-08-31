@@ -9,7 +9,7 @@
     /// <summary>
     /// Model used for registering administration users
     /// </summary>
-    public class RegisterAuthUserRequestModel
+    public class RegisterAdministrationUserRequestModel
     {
         /// <summary>
         /// Email for the user - this will be your login account
@@ -27,6 +27,6 @@
         /// Roles for the user
         /// </summary>
         [Required]
-        public ICollection<AuthUserRole> Roles { get; } = new HashSet<AuthUserRole>();
+        public ICollection<AdministrationUserRole> Roles { get; } = new HashSet<AdministrationUserRole>();
     }
 }

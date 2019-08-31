@@ -146,7 +146,7 @@
         /// <param name="roles">roles</param>
         /// <param name="transaction">transaction</param>
         /// <returns></returns>
-        public async Task<InsertOrUpdDbResult> InsertAdministrationUserAsync(String email, String passwordHash, IReadOnlyCollection<AuthUserRole> roles, IDbTransaction transaction)
+        public async Task<InsertOrUpdDbResult> InsertAdministrationUserAsync(String email, String passwordHash, IReadOnlyCollection<AdministrationUserRole> roles, IDbTransaction transaction)
         {
             var param = new DynamicParameters(new { @email = email, @password_hash = passwordHash, @roles = AsIntList(roles.Ints()) });
             param.Add("identity", dbType: DbType.Int32, direction: ParameterDirection.Output);
@@ -162,7 +162,7 @@
         /// <param name="email">email</param>
         /// <param name="passwordHash">password hash</param>
         /// <returns></returns>
-        public async Task<AuthUser> GetAdministrationUserAsync(string email)
+        public async Task<AdministrationUser> GetAdministrationUserAsync(string email)
         {
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {

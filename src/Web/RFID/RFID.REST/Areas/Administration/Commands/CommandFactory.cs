@@ -15,9 +15,9 @@
     {
         private readonly SqlConnectionFactory sqlConnectionFactory;
         private readonly Database database;
-        private readonly IPasswordHasher<AuthUser> passwordHasher;
+        private readonly IPasswordHasher<AdministrationUser> passwordHasher;
 
-        public CommandFactory(SqlConnectionFactory sqlConnectionFactory, Database database, IPasswordHasher<AuthUser> passwordHasher)
+        public CommandFactory(SqlConnectionFactory sqlConnectionFactory, Database database, IPasswordHasher<AdministrationUser> passwordHasher)
         {
             this.sqlConnectionFactory = sqlConnectionFactory;
             this.database = database;
@@ -51,9 +51,9 @@
             return new RegisterOrUpdateAccessPointCommand(this.sqlConnectionFactory, this.database);
         }
 
-        public RegisterAuthUserCommand CreateRegisterUserCommand()
+        public RegisterAdministrationUserCommand CreateRegisterAdministrationUserCommand()
         {
-            return new RegisterAuthUserCommand(this.sqlConnectionFactory, this.database, this.passwordHasher);
+            return new RegisterAdministrationUserCommand(this.sqlConnectionFactory, this.database, this.passwordHasher);
         }
     }
 }

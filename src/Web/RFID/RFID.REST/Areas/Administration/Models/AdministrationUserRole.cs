@@ -8,7 +8,7 @@
     /// <summary>
     /// Administration user roles
     /// </summary>
-    public enum AuthUserRole
+    public enum AdministrationUserRole
     {
         Admin = 1
     }
