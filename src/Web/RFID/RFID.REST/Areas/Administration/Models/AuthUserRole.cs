@@ -1,4 +1,4 @@
-﻿namespace RFID.REST.Areas.User.Models
+﻿namespace RFID.REST.Areas.Administration.Models
 {
     using System;
     using System.Collections.Generic;
@@ -8,7 +8,7 @@
     /// <summary>
     /// Administration user roles
     /// </summary>
-    public enum UserRole
+    public enum AuthUserRole
     {
         Admin = 1
     }

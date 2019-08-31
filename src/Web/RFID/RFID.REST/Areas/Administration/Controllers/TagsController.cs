@@ -3,7 +3,7 @@
     using Microsoft.AspNetCore.Mvc;
     using RFID.REST.Areas.Administration.Commands;
     using RFID.REST.Areas.Administration.Models;
-    using RFID.REST.Models.Common;
+    using RFID.REST.Models;
     using System;
     using System.Collections.Generic;
     using System.Linq;

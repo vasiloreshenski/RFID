@@ -1,5 +1,7 @@
 ﻿namespace RFID.REST.Areas.Administration.Commands
 {
+    using Microsoft.AspNetCore.Identity;
+    using RFID.REST.Areas.Administration.Models;
     using RFID.REST.Database;
     using System;
     using System.Collections.Generic;
@@ -13,11 +15,13 @@
     {
         private readonly SqlConnectionFactory sqlConnectionFactory;
         private readonly Database database;
+        private readonly IPasswordHasher<AuthUser> passwordHasher;
 
-        public CommandFactory(SqlConnectionFactory sqlConnectionFactory, Database database)
+        public CommandFactory(SqlConnectionFactory sqlConnectionFactory, Database database, IPasswordHasher<AuthUser> passwordHasher)
         {
             this.sqlConnectionFactory = sqlConnectionFactory;
             this.database = database;
+            this.passwordHasher = passwordHasher;
         }
 
         /// <summary>
@@ -45,6 +49,11 @@
         public RegisterOrUpdateAccessPointCommand CreateRegisterOrUpdateAccessPoint()
         {
             return new RegisterOrUpdateAccessPointCommand(this.sqlConnectionFactory, this.database);
+        }
+
+        public RegisterAuthUserCommand CreateRegisterUserCommand()
+        {
+            return new RegisterAuthUserCommand(this.sqlConnectionFactory, this.database, this.passwordHasher);
         }
     }
 }

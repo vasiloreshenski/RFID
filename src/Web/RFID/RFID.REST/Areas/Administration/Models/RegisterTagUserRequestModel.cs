@@ -9,7 +9,7 @@
     /// <summary>
     /// Represents user associated to specific tag
     /// </summary>
-    public class RequestUserModel
+    public class RegisterTagUserRequestModel
     {
         /// <summary>
         /// User id

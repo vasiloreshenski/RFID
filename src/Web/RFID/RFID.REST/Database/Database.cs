@@ -6,6 +6,7 @@
     using System.Linq;
     using System.Threading.Tasks;
     using Dapper;
+    using RFID.REST.Areas.Administration.Models;
     using RFID.REST.Models;
 
     /// <summary>
@@ -145,7 +146,7 @@
         /// <param name="roles">roles</param>
         /// <param name="transaction">transaction</param>
         /// <returns></returns>
-        public async Task<InsertOrUpdDbResult> InsertAdministrationUserAsync(String email, String passwordHash, IReadOnlyCollection<Areas.User.Models.UserRole> roles, IDbTransaction transaction)
+        public async Task<InsertOrUpdDbResult> InsertAdministrationUserAsync(String email, String passwordHash, IReadOnlyCollection<AuthUserRole> roles, IDbTransaction transaction)
         {
             var param = new DynamicParameters(new { @email = email, @password_hash = passwordHash, @roles = AsIntList(roles.Ints()) });
             param.Add("identity", dbType: DbType.Int32, direction: ParameterDirection.Output);
@@ -153,6 +154,22 @@
             await transaction.ExecuteStoreProcedureAsync("administration.usp_insert_user", param: param);
 
             return InsertOrUpdDbResult.Create(param.Identity(), true);
+        }
+
+        /// <summary>
+        /// Returns administration user by email and password hash
+        /// </summary>
+        /// <param name="email">email</param>
+        /// <param name="passwordHash">password hash</param>
+        /// <returns></returns>
+        public async Task<AuthUser> GetAdministrationUserAsync(string email)
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+
+            }
+
+            throw new NotImplementedException();
         }
 
         private async Task<InsertOrUpdDbResult> InsertOrUpdateTagAsync(

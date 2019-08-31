@@ -1,6 +1,5 @@
 ﻿namespace RFID.REST.Areas.Administration.Models
 {
-    using RFID.REST.Models;
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
@@ -8,25 +7,26 @@
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Request model used for registering new tags
+    /// Model used for registering administration users
     /// </summary>
-    public class RegisterTagRequestModel
+    public class RegisterAuthUserRequestModel
     {
         /// <summary>
-        /// Unique tag number
+        /// Email for the user - this will be your login account
         /// </summary>
         [Required]
-        public String Number { get; set; }
+        public String Email { get; set; }
 
         /// <summary>
-        /// Level of access for the current tag
+        /// Password
         /// </summary>
         [Required]
-        public AccessLevel AccessLevel { get; set; }
+        public String Password { get; set; }
 
         /// <summary>
-        /// User associated with the current tag
+        /// Roles for the user
         /// </summary>
-        public RegisterTagUserRequestModel User { get; set; }
+        [Required]
+        public ICollection<AuthUserRole> Roles { get; } = new HashSet<AuthUserRole>();
     }
 }

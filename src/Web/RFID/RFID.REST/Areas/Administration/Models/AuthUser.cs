@@ -1,4 +1,4 @@
-﻿namespace RFID.REST.Areas.User.Models
+﻿namespace RFID.REST.Areas.Administration.Models
 {
     using System;
     using System.Collections.Generic;
@@ -8,22 +8,22 @@
     /// <summary>
     /// Domain model for the user
     /// </summary>
-    public class User
+    public class AuthUser
     {
-        public User(string email, IReadOnlyCollection<UserRole> roles)
+        public AuthUser(String email, IReadOnlyCollection<AuthUserRole> roles)
         {
-            Email = email;
-            Roles = roles;
+            this.Email = email;
+            this.Roles = roles;
         }
 
         /// <summary>
         /// Email
         /// </summary>
         public String Email { get; private set; }
-
+        
         /// <summary>
         /// Roles
         /// </summary>
-        public IReadOnlyCollection<UserRole> Roles { get; }
+        public IReadOnlyCollection<AuthUserRole> Roles { get; }
     }
 }
