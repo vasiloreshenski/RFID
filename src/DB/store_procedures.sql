@@ -128,7 +128,7 @@ begin
 
 	set @identity = SCOPE_IDENTITY();
 
-	insert into administration.UsersReles(UserId, RoleId)
+	insert into administration.UsersRoles(UserId, RoleId)
 	select
 		@identity,
 		r.[Value]

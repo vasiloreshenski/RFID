@@ -51,7 +51,7 @@ return
 	select
 		u.Email,
 		u.PasswordHash,
-		SUM(ur.RoleId) as [Role]
+		SUM(ur.RoleId) as [RoleId]
 	from administration.Users as u
 	join administration.UsersRoles as ur on u.Id = ur.UserId
 	where u.Email = @email

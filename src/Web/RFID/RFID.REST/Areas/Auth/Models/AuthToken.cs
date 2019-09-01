@@ -12,7 +12,7 @@
     /// </summary>
     public class AuthToken
     {
-        public AuthToken(SecurityToken value)
+        public AuthToken(String value)
         {
             Value = value;
         }
@@ -20,6 +20,6 @@
         /// <summary>
         /// Value of generated token
         /// </summary>
-        public SecurityToken Value { get; }
+        public String Value { get; }
     }
 }

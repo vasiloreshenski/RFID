@@ -50,24 +50,28 @@
             return null;
         }
 
-        private SecurityToken GenerateToken(AdministrationUser user)
+        private String GenerateToken(AdministrationUser user)
         {
             // authentication successful so generate jwt token
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(this.authSettings.Secret);
+            var key = this.authSettings.SecretBytes;
             var tokenDescriptor = new SecurityTokenDescriptor
             {
+                Issuer = null,
+                Audience = null,
+                IssuedAt = DateTime.UtcNow,
+                Expires = DateTime.UtcNow.AddDays(7),
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim(ClaimTypes.Name, user.Email.ToString()),
                     new Claim(ClaimTypes.Role, user.Roles.ToString())
                 }),
-                Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var token = tokenHandler.CreateJwtSecurityToken(tokenDescriptor);
+            var tokenStr = tokenHandler.WriteToken(token);
 
-            return token;
+            return tokenStr;
         }
     }
 }

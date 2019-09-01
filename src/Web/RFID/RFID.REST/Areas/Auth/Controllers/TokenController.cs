@@ -12,15 +12,15 @@
     /// <summary>
     /// Controller for generating, refereshing auth tokens
     /// </summary>
-    [Route("/api/auth")]
+    [Route("[area]/api/token")]
     [ApiController]
     [Area("Auth")]
     [Authorize]
-    public class AuthController : ControllerBase
+    public class TokenController : ControllerBase
     {
         private readonly Auth auth;
 
-        public AuthController(Auth auth)
+        public TokenController(Auth auth)
         {
             this.auth = auth;
         }
@@ -32,9 +32,9 @@
         /// 200 if the user is registered
         /// 404 if the user is not registered
         /// </returns>
-        [HttpGet("/token")]
+        [HttpGet("generate")]
         [AllowAnonymous]
-        public async Task<IActionResult> GenerateTokenAsync(TokenGenerationRequestModel model)
+        public async Task<IActionResult> GenerateTokenAsync([FromQuery]TokenGenerationRequestModel model)
         {
             var token = await this.auth.IssueTokenForUserAsync(model);
             if (token != null)
@@ -45,6 +45,13 @@
             {
                 return this.NotFound();
             }
+        }
+
+        [HttpGet("refresh")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RefereshAsync()
+        {
+            return this.Ok();
         }
     }
 }

@@ -146,7 +146,7 @@
         /// <param name="roles">roles</param>
         /// <param name="transaction">transaction</param>
         /// <returns></returns>
-        public async Task<InsertOrUpdDbResult> InsertAdministrationUserAsync(String email, String passwordHash, IReadOnlyCollection<AdministrationUserRoles> roles, IDbTransaction transaction)
+        public async Task<InsertOrUpdDbResult> InsertAdministrationUserAsync(String email, String passwordHash, AdministrationUserRoles roles, IDbTransaction transaction)
         {
             var param = new DynamicParameters(new { @email = email, @password_hash = passwordHash, @roles = AsIntList(roles.Ints()) });
             param.Add("identity", dbType: DbType.Int32, direction: ParameterDirection.Output);
@@ -165,7 +165,7 @@
         {
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
-                var dbUser = await connection.QuerySingleOrDefaultAsync<(String email, String passwordHash, int roleId)>("select x.Email, x.PasswordHash, x.RoleId from administration.f_get_user(@email)", param: new { @email = email });
+                var dbUser = await connection.QuerySingleOrDefaultAsync<(String email, String passwordHash, int roleId)>("select x.Email, x.PasswordHash, x.RoleId from administration.f_get_user(@email) as x", param: new { @email = email });
                 if (dbUser.Equals(default) == false)
                 {
                     return new AdministrationUser(dbUser.email, dbUser.passwordHash, (AdministrationUserRoles)dbUser.roleId);

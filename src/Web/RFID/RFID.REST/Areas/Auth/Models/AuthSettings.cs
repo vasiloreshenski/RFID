@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -43,5 +44,10 @@
         /// Reference expiration
         /// </summary>
         public TimeSpan RefreshExpiration { get; }
+        
+        /// <summary>
+        /// ASCII bytes representation of the secret
+        /// </summary>
+        public Byte[] SecretBytes => Encoding.ASCII.GetBytes(this.Secret);
     }
 }

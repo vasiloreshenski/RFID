@@ -10,7 +10,7 @@
     using System.Threading.Tasks;
 
     [ApiController]
-    [Route("/api/users")]
+    [Route("[area]/api/users")]
     [Area("Administration")]
     [Authorize]
     public class UsersController : ControllerBase
@@ -22,9 +22,9 @@
             this.commandFactory = commandFactory;
         }
 
-        [HttpPost("/register")]
+        [HttpPost("register")]
         [AllowAnonymous]
-        public async Task<IActionResult> RegisterAsync(RegisterAdministrationUserRequestModel model)
+        public async Task<IActionResult> RegisterAsync([FromBody]RegisterAdministrationUserRequestModel model)
         {
             var command = this.commandFactory.CreateRegisterAdministrationUserCommand();
             await command.RegisterAsync(model);

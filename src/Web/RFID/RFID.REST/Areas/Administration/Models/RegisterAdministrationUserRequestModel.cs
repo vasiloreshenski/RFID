@@ -1,5 +1,6 @@
 ﻿namespace RFID.REST.Areas.Administration.Models
 {
+    using Microsoft.AspNetCore.Mvc.ModelBinding;
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
@@ -26,7 +27,7 @@
         /// <summary>
         /// Roles for the user
         /// </summary>
-        [Required]
-        public ICollection<AdministrationUserRoles> Roles { get; } = new HashSet<AdministrationUserRoles>();
+        [BindRequired]
+        public AdministrationUserRoles Roles { get; set; }
     }
 }

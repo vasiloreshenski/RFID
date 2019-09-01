@@ -166,7 +166,7 @@ go
 create unique index uidx_administration_Roles_Name on administration.Roles([Name]);
 go
 
-insert into administration.Roles([Name]) values ('Admin');
+insert into administration.Roles(Id, [Name]) values (1, 'Admin');
 go
 
 -- create users

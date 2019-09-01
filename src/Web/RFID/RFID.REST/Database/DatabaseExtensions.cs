@@ -45,5 +45,16 @@
         {
             return enums.Select(x => x.ToInt32(CultureInfo.InvariantCulture)).ToList();
         }
+
+        public static IReadOnlyCollection<int> Ints(this Enum @enum)
+        {
+            var ints = (from e in Enum.GetValues(@enum.GetType()).Cast<Enum>()
+                        where @enum.HasFlag(e)
+                        select e)
+                       .Cast<int>()
+                       .ToList();
+            
+            return ints;
+        }
     }
 }

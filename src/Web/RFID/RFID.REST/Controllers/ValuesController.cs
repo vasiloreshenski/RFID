@@ -6,8 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace RFID.REST.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[area]/api/[controller]")]
     [ApiController]
+    [Area("val")]
     public class ValuesController : ControllerBase
     {
         // GET api/values

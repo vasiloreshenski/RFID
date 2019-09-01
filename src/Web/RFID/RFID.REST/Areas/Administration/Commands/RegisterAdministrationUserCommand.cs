@@ -37,7 +37,7 @@
                 {
                     var passwordHash = this.passwordHasher.HashPassword(null, model.Password);
                     
-                    await this.database.InsertAdministrationUserAsync(email: model.Email, passwordHash: passwordHash, roles: model.Roles.ToArray(), transaction: transaction);
+                    await this.database.InsertAdministrationUserAsync(email: model.Email, passwordHash: passwordHash, roles: model.Roles, transaction: transaction);
 
                     transaction.Commit();
                 }
