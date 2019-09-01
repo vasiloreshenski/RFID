@@ -3,6 +3,7 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using RFID.REST.Areas.Auth.Models;
+    using RFID.REST.Areas.Auth.Services;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -17,6 +18,13 @@
     [Authorize]
     public class AuthController : ControllerBase
     {
+        private readonly Auth auth;
+
+        public AuthController(Auth auth)
+        {
+            this.auth = auth;
+        }
+
         /// <summary>
         /// Generates token for the specified user
         /// </summary>
@@ -28,7 +36,15 @@
         [AllowAnonymous]
         public async Task<IActionResult> GenerateTokenAsync(TokenGenerationRequestModel model)
         {
-            throw new NotImplementedException();
+            var token = await this.auth.IssueTokenForUserAsync(model);
+            if (token != null)
+            {
+                return this.Ok(token);
+            }
+            else
+            {
+                return this.NotFound();
+            }
         }
     }
 }

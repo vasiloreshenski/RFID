@@ -146,7 +146,7 @@
         /// <param name="roles">roles</param>
         /// <param name="transaction">transaction</param>
         /// <returns></returns>
-        public async Task<InsertOrUpdDbResult> InsertAdministrationUserAsync(String email, String passwordHash, IReadOnlyCollection<AdministrationUserRole> roles, IDbTransaction transaction)
+        public async Task<InsertOrUpdDbResult> InsertAdministrationUserAsync(String email, String passwordHash, IReadOnlyCollection<AdministrationUserRoles> roles, IDbTransaction transaction)
         {
             var param = new DynamicParameters(new { @email = email, @password_hash = passwordHash, @roles = AsIntList(roles.Ints()) });
             param.Add("identity", dbType: DbType.Int32, direction: ParameterDirection.Output);
@@ -157,19 +157,24 @@
         }
 
         /// <summary>
-        /// Returns administration user by email and password hash
+        /// Returns administration user by email
         /// </summary>
         /// <param name="email">email</param>
-        /// <param name="passwordHash">password hash</param>
         /// <returns></returns>
         public async Task<AdministrationUser> GetAdministrationUserAsync(string email)
         {
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
-
+                var dbUser = await connection.QuerySingleOrDefaultAsync<(String email, String passwordHash, int roleId)>("select x.Email, x.PasswordHash, x.RoleId from administration.f_get_user(@email)", param: new { @email = email });
+                if (dbUser.Equals(default) == false)
+                {
+                    return new AdministrationUser(dbUser.email, dbUser.passwordHash, (AdministrationUserRoles)dbUser.roleId);
+                }
+                else
+                {
+                    return null;
+                }
             }
-
-            throw new NotImplementedException();
         }
 
         private async Task<InsertOrUpdDbResult> InsertOrUpdateTagAsync(

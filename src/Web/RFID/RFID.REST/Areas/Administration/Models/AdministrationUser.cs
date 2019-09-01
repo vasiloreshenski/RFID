@@ -10,20 +10,26 @@
     /// </summary>
     public class AdministrationUser
     {
-        public AdministrationUser(String email, IReadOnlyCollection<AdministrationUserRole> roles)
+        public AdministrationUser(String email, String passwordHash, AdministrationUserRoles roles)
         {
             this.Email = email;
             this.Roles = roles;
+            this.PasswordHash = passwordHash;
         }
 
         /// <summary>
         /// Email
         /// </summary>
-        public String Email { get; private set; }
+        public String Email { get; }
         
+        /// <summary>
+        /// Password hash
+        /// </summary>
+        public String PasswordHash { get; }
+
         /// <summary>
         /// Roles
         /// </summary>
-        public IReadOnlyCollection<AdministrationUserRole> Roles { get; }
+        public AdministrationUserRoles Roles { get; }
     }
 }

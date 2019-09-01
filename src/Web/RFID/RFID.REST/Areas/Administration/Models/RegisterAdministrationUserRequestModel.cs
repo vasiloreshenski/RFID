@@ -27,6 +27,6 @@
         /// Roles for the user
         /// </summary>
         [Required]
-        public ICollection<AdministrationUserRole> Roles { get; } = new HashSet<AdministrationUserRole>();
+        public ICollection<AdministrationUserRoles> Roles { get; } = new HashSet<AdministrationUserRoles>();
     }
 }
