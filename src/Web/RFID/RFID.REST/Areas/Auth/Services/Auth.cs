@@ -10,6 +10,7 @@
     using System.IdentityModel.Tokens.Jwt;
     using System.Linq;
     using System.Security.Claims;
+    using System.Security.Cryptography;
     using System.Text;
     using System.Threading.Tasks;
 
@@ -18,11 +19,13 @@
     /// </summary>
     public class Auth
     {
-        private readonly IPasswordHasher<AdministrationUser> passwordHasher;
+        public static readonly String SecurityAlg = SecurityAlgorithms.HmacSha256Signature;
+
+        private readonly IPasswordHasher<AuthUser> passwordHasher;
         private readonly Database database;
         private readonly AuthSettings authSettings;
 
-        public Auth(IPasswordHasher<AdministrationUser> passwordHasher, Database database, AuthSettings authSettings)
+        public Auth(IPasswordHasher<AuthUser> passwordHasher, Database database, AuthSettings authSettings)
         {
             this.passwordHasher = passwordHasher;
             this.database = database;
@@ -34,44 +37,94 @@
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public async Task<AuthToken> IssueTokenForUserAsync(TokenGenerationRequestModel model)
+        public async Task<AuthToken> ValidatePasswordAndGenerateTokenAsync(String email, String password)
         {
-            var administrationUser = await this.database.GetAdministrationUserAsync(model.Email);
-            if (administrationUser != null)
+            var authUser = await this.database.GeAuthUserAsync(email);
+            if (authUser != null)
             {
-                var verificationResult = passwordHasher.VerifyHashedPassword(administrationUser, administrationUser.PasswordHash, model.Password);
+                var verificationResult = passwordHasher.VerifyHashedPassword(authUser, authUser.PasswordHash, password);
                 if (verificationResult == PasswordVerificationResult.Success)
                 {
-                    var securityToken = GenerateToken(administrationUser);
-                    return new AuthToken(securityToken);
+                    var authToken = this.GenerateToken(authUser.Email, authUser.Roles);
+                    return authToken;
                 }
             }
 
             return null;
         }
 
-        private String GenerateToken(AdministrationUser user)
+        /// <summary>
+        /// Generates token with the email and role claims
+        /// </summary>
+        /// <param name="email">Email</param>
+        /// <param name="roles">Role</param>
+        /// <returns></returns>
+        public AuthToken GenerateToken(String email, UserRoles roles)
         {
             // authentication successful so generate jwt token
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = this.authSettings.SecretBytes;
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Issuer = null,
                 Audience = null,
                 IssuedAt = DateTime.UtcNow,
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = DateTime.UtcNow.Add(AuthToken.DefaultExpire),
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.Name, user.Email.ToString()),
-                    new Claim(ClaimTypes.Role, user.Roles.ToString())
+                    new Claim(ClaimTypes.Name, email),
+                    new Claim(ClaimTypes.Role, roles.ToString())
                 }),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                SigningCredentials = new SigningCredentials(this.authSettings.SecurityKey, SecurityAlg)
             };
             var token = tokenHandler.CreateJwtSecurityToken(tokenDescriptor);
             var tokenStr = tokenHandler.WriteToken(token);
 
-            return tokenStr;
+            var refreshToken = GenerateRefereshToken();
+
+            return new AuthToken(tokenStr, refreshToken);
+        }
+
+        /// <summary>
+        /// Returns claims info the specified expired token.
+        /// </summary>
+        /// <returns></returns>
+        public ClaimsPrincipal GetClamsPrincipalFromExpiredToken(String value)
+        {
+            var validationParameters = this.authSettings.CreateTokenValidationParameters();
+
+            // we don't need to validate the lifetime of an expired token
+            validationParameters.ValidateLifetime = false;
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var principal = tokenHandler.ValidateToken(value, validationParameters , out var securityToken);
+            var jwtSecurityToken = securityToken as JwtSecurityToken;
+
+            // if we don't validate the hash alg there is posability to be send token who is not using hash alg which will be automatically valid
+            if (jwtSecurityToken == null || jwtSecurityToken.Header.Alg.Equals(SecurityAlg, StringComparison.InvariantCultureIgnoreCase) == false)
+            {
+                return null;
+            }
+
+            return principal;
+        }
+
+        /// <summary>
+        /// Generates refresh token
+        /// </summary>
+        /// <returns></returns>
+        public static String GenerateRefereshToken()
+        {
+            var size = 32;
+
+            var buffer = new Byte[size];
+            using (var rg = RandomNumberGenerator.Create())
+            {
+                rg.GetBytes(buffer, offset: 0, count: size);
+            }
+
+            var str = Convert.ToBase64String(buffer);
+
+            return str;
         }
     }
 }

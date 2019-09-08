@@ -1,5 +1,6 @@
 ﻿namespace RFID.REST.Areas.Auth.Models
 {
+    using Microsoft.IdentityModel.Tokens;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -49,5 +50,25 @@
         /// ASCII bytes representation of the secret
         /// </summary>
         public Byte[] SecretBytes => Encoding.ASCII.GetBytes(this.Secret);
+
+        /// <summary>
+        /// Security key
+        /// </summary>
+        public SecurityKey SecurityKey => new SymmetricSecurityKey(this.SecretBytes);
+
+        /// <summary>
+        /// Create token validation paramters
+        /// </summary>
+        /// <returns></returns>
+        public TokenValidationParameters CreateTokenValidationParameters()
+        {
+            return new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = this.SecurityKey,
+                ValidateIssuer = false,
+                ValidateAudience = false
+            };
+        }
     }
 }

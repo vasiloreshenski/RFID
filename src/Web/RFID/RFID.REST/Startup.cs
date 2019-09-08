@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
@@ -16,6 +18,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using RFID.REST.Areas.Administration.Models;
 using RFID.REST.Areas.Auth.Models;
+using RFID.REST.Common;
 using RFID.REST.Database;
 
 namespace RFID.REST
@@ -35,6 +38,7 @@ namespace RFID.REST
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             this.ConfigureJwtService(services);
             this.ConfigureRfidServices(services);
+            ConfigureAuthorizationPolicies(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -42,20 +46,6 @@ namespace RFID.REST
         {
             app.UseAuthentication();
             app.UseMvc();
-
-            if (env.IsDevelopment())
-            {
-                app.UseExceptionHandler(new ExceptionHandlerOptions
-                {
-                    ExceptionHandler = c =>
-                    {
-                        var feature = c.Features.Get<IExceptionHandlerPathFeature>();
-                        var exception = feature.Error;
-
-                        return Task.CompletedTask;
-                    }
-                });
-            }
         }
 
         private AuthSettings CreateAuthSettings()
@@ -85,12 +75,14 @@ namespace RFID.REST
             services.AddSingleton<Database.Database>();
 
             // administration
-            var passwordHasher = new PasswordHasher<AdministrationUser>();
-            services.AddSingleton<IPasswordHasher<AdministrationUser>>(passwordHasher);
+            var adminPasswordHasher = new PasswordHasher<AdministrationUser>();
+            services.AddSingleton<IPasswordHasher<AdministrationUser>>(adminPasswordHasher);
             services.AddSingleton<Areas.Administration.Commands.CommandFactory>();
 
             // auth
             services.AddSingleton<Areas.Auth.Services.Auth>();
+            var authPasswordHasher = new PasswordHasher<AuthUser>();
+            services.AddSingleton<IPasswordHasher<AuthUser>>(authPasswordHasher);
 
             // access control
         }
@@ -104,15 +96,15 @@ namespace RFID.REST
             {
                 x.RequireHttpsMetadata = false;
                 x.SaveToken = true;
-                x.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(authSettings.SecretBytes),
-                    // ValidIssuer = authSettings.Issuer,
-                    // ValidAudience = authSettings.Audience,
-                    ValidateIssuer = false,
-                    ValidateAudience = false
-                };
+                x.TokenValidationParameters = authSettings.CreateTokenValidationParameters();
+            });
+        }
+
+        private static void ConfigureAuthorizationPolicies(IServiceCollection services)
+        {
+            services.AddAuthorization(opt => 
+            {
+                opt.AddPolicy(PolicyNames.AdminPolicy, b => b.RequireClaim(ClaimTypes.Role, $"{UserRoles.Admin}"));
             });
         }
     }

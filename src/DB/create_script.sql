@@ -173,7 +173,7 @@ go
 
 create table administration.Users
 (
-	Id int not null,
+	Id int not null identity (1, 1),
 	Email nvarchar(400) not null,
 	PasswordHash nvarchar(max) not null,
 	CreateDate datetime2 not null default(GETDATE()),
@@ -203,5 +203,17 @@ create table administration.UsersRoles
 	RoleId int not null,
 
 	constraint PK_administration_UserRoles primary key(UserId, RoleId)
+);
+go
+
+-- create user refresh tokens
+
+create table administration.RefreshTokens
+(
+	Id int not null,
+	Token nvarchar(100) not null
+
+	constraint PK_administration_RefreshToken primary key (Id),
+	constraint FK_administration_RefereshToken_Users foreign key (Id) references administration.Users(Id)
 );
 go

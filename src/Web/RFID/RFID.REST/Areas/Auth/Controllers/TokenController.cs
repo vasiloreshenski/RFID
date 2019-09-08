@@ -4,6 +4,7 @@
     using Microsoft.AspNetCore.Mvc;
     using RFID.REST.Areas.Auth.Models;
     using RFID.REST.Areas.Auth.Services;
+    using RFID.REST.Common;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -18,11 +19,11 @@
     [Authorize]
     public class TokenController : ControllerBase
     {
-        private readonly Auth auth;
+        private readonly Commands.CommandFactory commandFactory;
 
-        public TokenController(Auth auth)
+        public TokenController(Commands.CommandFactory commandFactory)
         {
-            this.auth = auth;
+            this.commandFactory = commandFactory;
         }
 
         /// <summary>
@@ -32,11 +33,12 @@
         /// 200 if the user is registered
         /// 404 if the user is not registered
         /// </returns>
-        [HttpGet("generate")]
+        [HttpPost("generate")]
         [AllowAnonymous]
-        public async Task<IActionResult> GenerateTokenAsync([FromQuery]TokenGenerationRequestModel model)
+        public async Task<IActionResult> GenerateTokenAsync(TokenGenerationRequestModel model)
         {
-            var token = await this.auth.IssueTokenForUserAsync(model);
+            var command = this.commandFactory.CreateGenerateAuthTokenCommand();
+            var token = await command.GenerateTokenAsync(model);
             if (token != null)
             {
                 return this.Ok(token);
@@ -47,11 +49,27 @@
             }
         }
 
-        [HttpGet("refresh")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> RefereshAsync()
+        /// <summary>
+        /// Generates new auth token and refresh token from the specified tokens
+        /// </summary>
+        /// <returns>
+        /// 200 if the referesh token and the auth token are valid
+        /// 400 if there is error with the tokens validation
+        /// </returns>
+        [HttpPost("refresh")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RefereshAsync(TokenRefreshRequestModel model)
         {
-            return this.Ok();
+            var command = this.commandFactory.CreateRefereshAuthTokenCommand();
+            var authToken = await command.RefreshTokenAsync(model);
+            if (authToken != null)
+            {
+                return this.Ok(authToken);
+            }
+            else
+            {
+                return this.NotFound();
+            }
         }
     }
 }

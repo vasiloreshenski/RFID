@@ -7,6 +7,7 @@
     using System.Threading.Tasks;
     using Dapper;
     using RFID.REST.Areas.Administration.Models;
+    using RFID.REST.Areas.Auth.Models;
     using RFID.REST.Models;
 
     /// <summary>
@@ -146,7 +147,7 @@
         /// <param name="roles">roles</param>
         /// <param name="transaction">transaction</param>
         /// <returns></returns>
-        public async Task<InsertOrUpdDbResult> InsertAdministrationUserAsync(String email, String passwordHash, AdministrationUserRoles roles, IDbTransaction transaction)
+        public async Task<InsertOrUpdDbResult> InsertAdministrationUserAsync(String email, String passwordHash, UserRoles roles, IDbTransaction transaction)
         {
             var param = new DynamicParameters(new { @email = email, @password_hash = passwordHash, @roles = AsIntList(roles.Ints()) });
             param.Add("identity", dbType: DbType.Int32, direction: ParameterDirection.Output);
@@ -168,13 +169,54 @@
                 var dbUser = await connection.QuerySingleOrDefaultAsync<(String email, String passwordHash, int roleId)>("select x.Email, x.PasswordHash, x.RoleId from administration.f_get_user(@email) as x", param: new { @email = email });
                 if (dbUser.Equals(default) == false)
                 {
-                    return new AdministrationUser(dbUser.email, dbUser.passwordHash, (AdministrationUserRoles)dbUser.roleId);
+                    return new AdministrationUser(dbUser.email, dbUser.passwordHash, (UserRoles)dbUser.roleId);
                 }
                 else
                 {
                     return null;
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns auth user by email
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AuthUser> GeAuthUserAsync(String email)
+        {
+            if (String.IsNullOrEmpty(email))
+            {
+                return null;
+            }
+
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var dbUser = await connection.QuerySingleOrDefaultAsync<(String email, String refreshToken, String passwordHash, int roleId)>("select x.Email, x.RefreshToken x.PasswordHash, x.RoleId from administration.f_get_user(@email) as x", param: new { @email = email });
+                if (dbUser.Equals(default) == false)
+                {
+                    return new AuthUser(dbUser.email, dbUser.refreshToken, dbUser.passwordHash, (UserRoles)dbUser.roleId);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Replaces the current refresh token for the user with the specified one
+        /// </summary>
+        /// <param name="email">email of the user</param>
+        /// <param name="newRefreshToken">new refresh token</param>
+        /// <returns></returns>
+        public async Task<InsertOrUpdDbResult> ReplaceRefreshTokenAsync(String email, String newRefreshToken, IDbTransaction transaction)
+        {
+            var dynamicParams = new DynamicParameters(new { @email = email, @refresh_token = newRefreshToken });
+            dynamicParams.Add("identity", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+            var insertedOrNotFound = await transaction.ExecuteStoreProcedureAsync<bool?>("administration.usp_replace_refresh_token", param: dynamicParams);
+
+            return InsertOrUpdDbResult.Create(dynamicParams.Identity(), insertedOrNotFound);
         }
 
         private async Task<InsertOrUpdDbResult> InsertOrUpdateTagAsync(

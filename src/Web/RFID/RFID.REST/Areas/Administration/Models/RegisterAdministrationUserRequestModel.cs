@@ -28,6 +28,6 @@
         /// Roles for the user
         /// </summary>
         [BindRequired]
-        public AdministrationUserRoles Roles { get; set; }
+        public UserRoles Roles { get; set; }
     }
 }

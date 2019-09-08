@@ -9,7 +9,7 @@
     /// Administration user roles
     /// </summary>
     [Flags]
-    public enum AdministrationUserRoles
+    public enum UserRoles
     {
         Admin = 1
     }

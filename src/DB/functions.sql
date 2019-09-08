@@ -51,9 +51,11 @@ return
 	select
 		u.Email,
 		u.PasswordHash,
-		SUM(ur.RoleId) as [RoleId]
+		SUM(ur.RoleId) as [RoleId],
+		rt.Token as [RefreshToken]
 	from administration.Users as u
 	join administration.UsersRoles as ur on u.Id = ur.UserId
+	join administration.RefreshTokens as rt on u.Id = rt.Id
 	where u.Email = @email
 	group by u.Email, u.PasswordHash
 );

@@ -17,6 +17,10 @@ if object_id('administration.usp_insert_or_update_access_point', 'P') is not nul
 	drop procedure administration.usp_insert_or_update_access_point;
 go
 
+if object_id('administration.usp_replace_refresh_token', 'P') is not null
+	drop procedure administration.usp_replace_refresh_token
+go
+
 
 if type_id ('dbo.IntList') is not null
 	drop type dbo.IntList;
@@ -133,5 +137,36 @@ begin
 		@identity,
 		r.[Value]
 	from @roles as r
+end;
+go
+
+create procedure administration.usp_replace_refresh_token
+	@email nvarchar(400),
+	@refresh_token nvarchar(100),
+	@identity int output
+as
+begin
+	set @identity = (select top 1 u.Id from administration.Users as u where u.Email = @email);
+	declare @added bit;
+
+	if @identity is not null and @identity <> 0
+	begin
+		if exists(select * from administration.RefreshTokens as rt where rt.Id = @identity)
+		begin
+			update administration.RefereshTokens
+			set Token = @refresh_token
+			where Id = @identity
+
+			set @added = 0;
+		end
+		else
+		begin
+			insert into administration.RefreshTokens(Id, Token)  values(@identity, @refresh_token);
+
+			set @added = 1;
+		end
+	end
+
+	return @added;
 end;
 go

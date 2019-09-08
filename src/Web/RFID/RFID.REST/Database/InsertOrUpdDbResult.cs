@@ -10,6 +10,18 @@
     /// </summary>
     public class InsertOrUpdDbResult
     {
+        public static InsertOrUpdDbResult Create(int id, bool? isInserted)
+        {
+            if (isInserted == null)
+            {
+                return NotFound;
+            }
+            else
+            {
+                return Create(id, isInserted.Value);
+            }
+        }
+
         public static InsertOrUpdDbResult Create(int id, bool isInserted)
         {
             return new InsertOrUpdDbResult
@@ -39,5 +51,10 @@
         /// True if updated
         /// </summary>
         public bool IsUpdated { get; set; }
+
+        /// <summary>
+        /// True if not found
+        /// </summary>
+        public bool IsNotFound => Object.ReferenceEquals(this, NotFound);
     }
 }
