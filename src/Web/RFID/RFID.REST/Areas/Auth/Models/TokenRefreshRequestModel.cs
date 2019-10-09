@@ -11,12 +11,6 @@
     /// </summary>
     public class TokenRefreshRequestModel
     {
-        public TokenRefreshRequestModel(string token, string refreshToken)
-        {
-            this.Token = token;
-            this.RefreshToken = refreshToken;
-        }
-
         /// <summary>
         /// Auth token
         /// </summary>

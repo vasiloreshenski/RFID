@@ -44,6 +44,7 @@ namespace RFID.REST
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseExceptionMiddleware();
             app.UseAuthentication();
             app.UseMvc();
         }
@@ -83,6 +84,7 @@ namespace RFID.REST
             services.AddSingleton<Areas.Auth.Services.Auth>();
             var authPasswordHasher = new PasswordHasher<AuthUser>();
             services.AddSingleton<IPasswordHasher<AuthUser>>(authPasswordHasher);
+            services.AddSingleton<Areas.Auth.Commands.CommandFactory>();
 
             // access control
         }

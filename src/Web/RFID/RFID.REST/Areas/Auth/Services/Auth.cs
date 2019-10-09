@@ -19,7 +19,7 @@
     /// </summary>
     public class Auth
     {
-        public static readonly String SecurityAlg = SecurityAlgorithms.HmacSha256Signature;
+        public static readonly String SecurityAlg = SecurityAlgorithms.HmacSha256;
 
         private readonly IPasswordHasher<AuthUser> passwordHasher;
         private readonly Database database;

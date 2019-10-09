@@ -191,7 +191,7 @@
 
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
-                var dbUser = await connection.QuerySingleOrDefaultAsync<(String email, String refreshToken, String passwordHash, int roleId)>("select x.Email, x.RefreshToken x.PasswordHash, x.RoleId from administration.f_get_user(@email) as x", param: new { @email = email });
+                var dbUser = await connection.QuerySingleOrDefaultAsync<(String email, String refreshToken, String passwordHash, int roleId)>("select x.Email, x.RefreshToken, x.PasswordHash, x.RoleId from administration.f_get_user(@email) as x", param: new { @email = email });
                 if (dbUser.Equals(default) == false)
                 {
                     return new AuthUser(dbUser.email, dbUser.refreshToken, dbUser.passwordHash, (UserRoles)dbUser.roleId);

@@ -57,6 +57,6 @@ return
 	join administration.UsersRoles as ur on u.Id = ur.UserId
 	join administration.RefreshTokens as rt on u.Id = rt.Id
 	where u.Email = @email
-	group by u.Email, u.PasswordHash
+	group by u.Email, u.PasswordHash, rt.Token
 );
 go

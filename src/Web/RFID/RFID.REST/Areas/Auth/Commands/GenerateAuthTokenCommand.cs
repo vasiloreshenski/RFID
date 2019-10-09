@@ -40,7 +40,7 @@
                 {
                     try
                     {
-                        dbResult = await this.database.ReplaceRefreshTokenAsync(model.Email, authToken.RefereshToken, transaction);
+                        dbResult = await this.database.ReplaceRefreshTokenAsync(model.Email, authToken.RefreshToken, transaction);
 
                         transaction.Commit();
                     }

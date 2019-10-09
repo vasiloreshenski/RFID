@@ -110,7 +110,7 @@ begin
 	end
 	else
 	begin
-		update access_control.AccessPoint
+		update access_control.AccessPoints
 			set
 				[Description] = iif(@description is not null, @description, [Description]),
 				[IsActive] = iif(@is_active is not null, @is_active, IsActive),
@@ -153,7 +153,7 @@ begin
 	begin
 		if exists(select * from administration.RefreshTokens as rt where rt.Id = @identity)
 		begin
-			update administration.RefereshTokens
+			update administration.RefreshTokens
 			set Token = @refresh_token
 			where Id = @identity
 

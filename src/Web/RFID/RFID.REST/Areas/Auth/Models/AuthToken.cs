@@ -23,7 +23,7 @@
         {
             this.Token = token;
             this.ExpireInSeconds = expireInSeconds;
-            this.RefereshToken = refereshToken;
+            this.RefreshToken = refereshToken;
         }
 
         /// <summary>
@@ -39,6 +39,6 @@
         /// <summary>
         /// Value for the referesh token
         /// </summary>
-        public String RefereshToken { get; }
+        public String RefreshToken { get; }
     }
 }
