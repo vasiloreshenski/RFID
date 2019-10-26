@@ -13,8 +13,8 @@
     /// <summary>
     /// Controller used for access control checks
     /// </summary>
-    [Route("api/[controller]")]
-    [Area("access_control")]
+    [Route("[area]/api/[controller]")]
+    [Area("accessControl")]
     [ApiController]
     [AllowAnonymous]
     public class TagsController : ControllerBase
@@ -31,11 +31,11 @@
         /// </summary>
         /// <param name="model">request model</param>
         /// <returns>200 with json response with the access result. example -> { "has_access": "true" } or 404 when the tag or the access point does not exists</returns>
-        [HttpGet("/check_access")]
+        [HttpGet("checkAccess")]
         public async Task<IActionResult> CheckAccessAsync([FromQuery]CheckTagAccessRequestModel model)
         {
-            var tagAccessLevel = await this.database.GetAccessLevelForTagAsync(model.TagId);
-            var accessPointLevel = await this.database.GetAccessLevelForAccessPointAsync(model.AccessPointIdentifier);
+            var tagAccessLevel = await this.database.GetAccessLevelForTagAsync(model.TagNumber);
+            var accessPointLevel = await this.database.GetAccessLevelForAccessPointAsync(model.AccessPointSerialNumber);
             if (tagAccessLevel == null || accessPointLevel == null)
             {
                 return this.NotFound();
@@ -43,8 +43,14 @@
             else
             {
                 var hasAccess = tagAccessLevel >= accessPointLevel;
-
-                return this.Ok(new { hasAccess = hasAccess });
+                if (hasAccess)
+                {
+                    return this.Ok();
+                }
+                else
+                {
+                    return this.Unauthorized();
+                }
             }
         }
     }

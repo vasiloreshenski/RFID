@@ -38,10 +38,10 @@
         public async Task<IActionResult> GenerateTokenAsync(TokenGenerationRequestModel model)
         {
             var command = this.commandFactory.CreateGenerateAuthTokenCommand();
-            var token = await command.GenerateTokenAsync(model);
-            if (token != null)
+            var commandResult = await command.GenerateTokenAsync(model);
+            if (commandResult.Success)
             {
-                return this.Ok(token);
+                return this.Ok(commandResult.Value);
             }
             else
             {
@@ -61,10 +61,10 @@
         public async Task<IActionResult> RefereshAsync(TokenRefreshRequestModel model)
         {
             var command = this.commandFactory.CreateRefereshAuthTokenCommand();
-            var authToken = await command.RefreshTokenAsync(model);
-            if (authToken != null)
+            var commandResult = await command.RefreshTokenAsync(model);
+            if (commandResult.Success)
             {
-                return this.Ok(authToken);
+                return this.Ok(commandResult.Value);
             }
             else
             {

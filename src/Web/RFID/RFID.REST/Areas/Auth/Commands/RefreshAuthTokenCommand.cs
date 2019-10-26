@@ -4,6 +4,7 @@
     using RFID.REST.Areas.Auth.Services;
     using RFID.REST.Common;
     using RFID.REST.Database;
+    using RFID.REST.Models;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -30,8 +31,11 @@
         /// </summary>
         /// <param name="model">Auth and referesh tokens</param>
         /// <returns></returns>
-        public async Task<AuthToken> RefreshTokenAsync(TokenRefreshRequestModel model)
+        public async Task<CommandResult<AuthToken>> RefreshTokenAsync(TokenRefreshRequestModel model)
         {
+            var dbResult = InsertOrUpdDbResult.NotFound;
+            var authToken = (AuthToken)null;
+
             var claimsPrincipal = this.auth.GetClamsPrincipalFromExpiredToken(model.Token);
             var email = claimsPrincipal?.Email();
             var authUser = await this.database.GeAuthUserAsync(email);
@@ -39,9 +43,9 @@
             var isValidRefreshToken = authUser?.RefreshToken == model.RefreshToken;
             if (isValidRefreshToken)
             {
-                var authToken = this.auth.GenerateToken(authUser.Email, authUser.Roles);
-                var dbResult = InsertOrUpdDbResult.NotFound;
-                using (var transaction = await this.sqlConnectionFactory.CreateTransactionAsync())
+                authToken = this.auth.GenerateToken(authUser.Email, authUser.Roles);
+                using (var connection = await this.sqlConnectionFactory.CreateConnectionAsync(true))
+                using (var transaction = connection.BeginTransaction())
                 {
                     try
                     {
@@ -56,16 +60,14 @@
                         throw;
                     }
                 }
-
-                if (dbResult.IsNotFound)
-                {
-                    return null;
-                }
-
-                return authToken;
             }
 
-            return null;
+            if (dbResult.IsNotFound)
+            {
+                return CommandResult.NotFound<AuthToken>();
+            }
+
+            return new CommandResult<AuthToken>(authToken, CommandStatus.Updated);
         }
     }
 }

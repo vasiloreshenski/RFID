@@ -31,17 +31,17 @@
         public async Task<InsertOrUpdDbResult> InsertAccessPointUserAsync(String username, IDbTransaction transaction)
         {
             var dynamicParams = new DynamicParameters(new { @username = username });
-            dynamicParams.Add("user_id", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            dynamicParams.AddIdentity();
 
             var inserted = await transaction.ExecuteStoreProcedureAsync<bool>(
-                name: "[administration].[usp_insert_user_if_not_exists]",
+                name: "[access_control].[usp_insert_user_if_not_exists]",
                 param: dynamicParams
             );
 
             return new InsertOrUpdDbResult
             {
                 IsInserted = inserted,
-                Id = dynamicParams.Get<int>("user_id")
+                Id = dynamicParams.Identity()
             };
         }
 
@@ -53,16 +53,14 @@
         /// <param name="accessLevel">Tag access level</param>
         /// <param name="transaction">Transaction</param>
         /// <returns>True if the tag does not already exists and is added to the database</returns>
-        public Task<InsertOrUpdDbResult> InsertTagIfNotExistsAsync(String number, int userId, AccessLevel accessLevel, IDbTransaction transaction)
+        public async Task<InsertOrUpdDbResult> InsertTagIfNotExistsAsync(String number, int userId, AccessLevel accessLevel, IDbTransaction transaction)
         {
-            return this.InsertOrUpdateTagAsync(
-                number: number,
-                userId: userId,
-                accessLevel: accessLevel,
-                isActive: true,
-                isDeleted: false,
-                transaction: transaction
-            );
+            var dynamicParams = new DynamicParameters(new { @number = number, @user_id = userId, @level_id = accessLevel, @is_active = true, @is_deleted = false });
+            dynamicParams.AddIdentity();
+
+            var isInserted = await transaction.ExecuteStoreProcedureAsync<bool>("access_control.usp_insert_tag_if_not_exists", dynamicParams);
+
+            return InsertOrUpdDbResult.Create(dynamicParams.Identity(), isInserted, false);
         }
 
         /// <summary>
@@ -99,11 +97,14 @@
         /// </summary>
         /// <param name="accessPointIdentifier">access point identifier</param>
         /// <returns></returns>
-        public async Task<AccessLevel?> GetAccessLevelForAccessPointAsync(Guid accessPointIdentifier)
+        public async Task<AccessLevel?> GetAccessLevelForAccessPointAsync(String serialNumber)
         {
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
-                return await connection.ExecuteScalarAsync<AccessLevel?>("select access_control.f_get_access_level_for_access_point(@identifier)", param: new { @identifier = accessPointIdentifier });
+                return await connection.ExecuteScalarAsync<AccessLevel?>(
+                    "select top 1 x.LevelId from access_control.AccessPoints as x where x.SerialNumber=@serial_number", 
+                    param: new { @serial_number = serialNumber}
+                );
             }
         }
 
@@ -112,11 +113,11 @@
         /// </summary>
         /// <param name="tagId">tag id</param>
         /// <returns></returns>
-        public async Task<AccessLevel?> GetAccessLevelForTagAsync(int tagId)
+        public async Task<AccessLevel?> GetAccessLevelForTagAsync(String number)
         {
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
-                return await connection.ExecuteScalarAsync<AccessLevel?>("select access_control.f_get_access_level_for_tag(@tag_id)", param: new { @tag_id = tagId });
+                return await connection.ExecuteScalarAsync<AccessLevel?>("select top 1 x.LevelId from access_control.Tags as x where x.Number=@number", param: new { @number = number });
             }
         }
 
@@ -129,14 +130,53 @@
         /// <param name="IsActive">is active flag</param>
         /// <param name="accessLevel">access level of the access point</param>
         /// <returns></returns>
-        public async Task<InsertOrUpdDbResult> InsertOrUpdateAccessPointAsync(Guid identifier, IDbTransaction transaction, String description = null, bool? IsActive = null, AccessLevel? accessLevel = null)
+        public async Task<InsertOrUpdDbResult> InsertAccessPointIfNotExistsAsync(
+            String serialNumber, 
+            IDbTransaction transaction, 
+            String description, 
+            bool IsActive, 
+            AccessLevel accessLevel,
+            AccessPointDirectionType direction)
         {
-            var param = new DynamicParameters(new { identifier = identifier, description = description, is_active = IsActive, level_id = accessLevel });
-            param.Add("access_point_id", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            var param = new DynamicParameters(new { serial_number = serialNumber, description = description, is_active = IsActive, level_id = accessLevel, direction_id = direction });
+            param.AddIdentity();
 
-            var isInserted = await transaction.ExecuteStoreProcedureAsync<bool>("access_control.usp_insert_or_update_access_point", param: param);
+            var isInserted = await transaction.ExecuteStoreProcedureAsync<bool>("access_control.usp_insert_access_point_if_not_exists", param: param);
 
-            return InsertOrUpdDbResult.Create(param.Identity(), isInserted);
+            return InsertOrUpdDbResult.Create(param.Identity(), isInserted, false);
+        }
+
+        /// <summary>
+        /// Updates the access point with the provided values. Any null values will be ignored during the update
+        /// </summary>
+        /// <param name="accessPointId">access point id</param>
+        /// <param name="transaction">transaction</param>
+        /// <param name="description">access point description</param>
+        /// <param name="isActive">access point is active flag</param>
+        /// <param name="accessLevel">access point access level</param>
+        /// <returns></returns>
+        public async Task<InsertOrUpdDbResult> UpdateAccessPointAsync(
+            int accessPointId, 
+            IDbTransaction transaction, 
+            String description = null, 
+            bool? isActive = null, 
+            AccessLevel? accessLevel = null,
+            AccessPointDirectionType? direction = null)
+        {
+            var serialNumber = await this.GetAccessPointSerialNumberAsync(accessPointId, transaction);
+            if (String.IsNullOrEmpty(serialNumber))
+            {
+                return InsertOrUpdDbResult.NotFound;
+            }
+            else
+            {
+                var param = new DynamicParameters(new { serial_number = serialNumber, description = description, is_active = isActive, level_id = (int?)accessLevel, direction_id = (int?)direction });
+                param.AddIdentity();
+
+                var inserted = await transaction.ExecuteStoreProcedureAsync<bool>("access_control.usp_insert_or_update_access_point", param);
+
+                return InsertOrUpdDbResult.Create(param.Identity(), inserted, inserted == false);
+            }
         }
 
         /// <summary>
@@ -152,9 +192,9 @@
             var param = new DynamicParameters(new { @email = email, @password_hash = passwordHash, @roles = AsIntList(roles.Ints()) });
             param.Add("identity", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-            await transaction.ExecuteStoreProcedureAsync("administration.usp_insert_user", param: param);
+            var isInserted = await transaction.ExecuteStoreProcedureAsync<bool>("administration.usp_insert_user_if_not_exists", param: param);
 
-            return InsertOrUpdDbResult.Create(param.Identity(), true);
+            return InsertOrUpdDbResult.Create(param.Identity(), isInserted, isUpdated: false);
         }
 
         /// <summary>
@@ -214,9 +254,9 @@
             var dynamicParams = new DynamicParameters(new { @email = email, @refresh_token = newRefreshToken });
             dynamicParams.Add("identity", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-            var insertedOrNotFound = await transaction.ExecuteStoreProcedureAsync<bool?>("administration.usp_replace_refresh_token", param: dynamicParams);
+            var inserted = await transaction.ExecuteStoreProcedureAsync<bool>("administration.usp_replace_refresh_token", param: dynamicParams);
 
-            return InsertOrUpdDbResult.Create(dynamicParams.Identity(), insertedOrNotFound);
+            return InsertOrUpdDbResult.Create(dynamicParams.Identity(), inserted, inserted == false);
         }
 
         private async Task<InsertOrUpdDbResult> InsertOrUpdateTagAsync(
@@ -228,19 +268,24 @@
             AccessLevel? accessLevel = null)
         {
             var dynamicParams = new DynamicParameters(new { @number = number, @level_id = accessLevel, @is_active = isActive, @is_deleted = isDeleted, @user_id = userId });
-            dynamicParams.Add("tag_id", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            dynamicParams.Add("identity", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
             var inserted = await transaction.ExecuteStoreProcedureAsync<bool>(
-                name: "[administration].[usp_insert_or_update_tag]",
+                name: "[access_control].[usp_insert_or_update_tag]",
                 param: dynamicParams
             );
 
-            return InsertOrUpdDbResult.Create(dynamicParams.Identity(), inserted);
+            return InsertOrUpdDbResult.Create(dynamicParams.Identity(), inserted, inserted == false);
         }
 
         private async Task<String> GetTagNumberByIdAsync(int tagId, IDbTransaction transaction)
         {
-            return await transaction.ExecuteScalarAsync<String>("select x.Number from control_access.Tags as x where x.Id=@tagId", param: new { @tagId = tagId });
+            return await transaction.ExecuteScalarAsync<String>("select x.Number from access_control.Tags as x where x.Id=@tag_id", param: new { @tag_id = tagId });
+        }
+
+        private async Task<String> GetAccessPointSerialNumberAsync(int accessPointId, IDbTransaction transaction)
+        {
+            return await transaction.ExecuteScalarAsync<String>("select x.SerialNumber from access_control.AccessPoints as x where x.Id=@access_point_id", param: new { @access_point_id = accessPointId });
         }
 
 

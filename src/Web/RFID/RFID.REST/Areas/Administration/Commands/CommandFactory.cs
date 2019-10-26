@@ -43,14 +43,19 @@
         }
 
         /// <summary>
-        /// Creates new instance of the <see cref="RegisterOrUpdateAccessPointCommand"/>
+        /// Creates new instance of the <see cref="RegisterAccessPointCommand"/>
         /// </summary>
         /// <returns></returns>
-        public RegisterOrUpdateAccessPointCommand CreateRegisterOrUpdateAccessPoint()
+        public RegisterAccessPointCommand CreateRegisterAccessPointCommand()
         {
-            return new RegisterOrUpdateAccessPointCommand(this.sqlConnectionFactory, this.database);
+            return new RegisterAccessPointCommand(this.sqlConnectionFactory, this.database);
         }
 
+        public UpdateAccessPointCommand CreateUpdateAccessPointCommand()
+        {
+            return new UpdateAccessPointCommand(this.database, this.sqlConnectionFactory);
+        }
+        
         public RegisterAdministrationUserCommand CreateRegisterAdministrationUserCommand()
         {
             return new RegisterAdministrationUserCommand(this.sqlConnectionFactory, this.database, this.passwordHasher);

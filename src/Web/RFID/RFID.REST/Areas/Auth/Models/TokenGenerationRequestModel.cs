@@ -15,6 +15,7 @@
         /// Email
         /// </summary>
         [Required]
+        [EmailAddress]
         public String Email { get; set; }
 
         /// <summary>

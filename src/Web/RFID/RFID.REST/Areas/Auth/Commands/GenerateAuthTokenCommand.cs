@@ -3,6 +3,7 @@
     using RFID.REST.Areas.Auth.Models;
     using RFID.REST.Areas.Auth.Services;
     using RFID.REST.Database;
+    using RFID.REST.Models;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -29,14 +30,15 @@
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public async Task<AuthToken> GenerateTokenAsync(TokenGenerationRequestModel model)
+        public async Task<CommandResult<AuthToken>> GenerateTokenAsync(TokenGenerationRequestModel model)
         {
             var dbResult = InsertOrUpdDbResult.NotFound;
 
             var authToken = await this.auth.ValidatePasswordAndGenerateTokenAsync(model.Email, model.Password);
             if (authToken != null)
             {
-                using (var transaction = await this.sqlConnectionFactory.CreateTransactionAsync())
+                using (var connection = await this.sqlConnectionFactory.CreateConnectionAsync(true))
+                using (var transaction = connection.BeginTransaction())
                 {
                     try
                     {
@@ -51,14 +53,16 @@
                         throw;
                     }
                 }
-
-                if (dbResult.IsNotFound)
-                {
-                    return null;
-                }
             }
 
-            return authToken;
+            if (dbResult.IsNotFound)
+            {
+                return CommandResult.NotFound<AuthToken>();
+            }
+            else
+            {
+                return new CommandResult<AuthToken>(authToken, CommandStatus.Created);
+            }
         }
     }
 }

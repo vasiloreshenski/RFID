@@ -32,24 +32,42 @@ go
 insert into access_control.AccessLevels([Name]) values ('Low'), ('Mid'), ('High');
 go
 
+create table access_control.Direction
+(
+	Id int not null identity(1, 1),
+	[Name] nvarchar(100) not null
+
+	constraint PK_access_control_Direction primary key (Id),
+);
+go
+
+create unique index uindx_access_control_Direction_Name on access_control.Direction([Name]);
+go
+
+insert into access_control.Direction([Name]) values ('Entrance'), ('Exit');
+go
+
 -- create access points
 create table access_control.AccessPoints
 (
 	Id int not null identity(1, 1),
 	[Description] nvarchar(max) not null,
-	Identifier uniqueidentifier not null,
+	SerialNumber nvarchar(400) not null,
 	IsActive bit not null,
 	CreateDate datetime2 not null default(GETDATE()),
 	ModificationDate datetime2 null,
-	LevelId int not null
+	LevelId int not null,
+	DirectionId int not null
 
 	constraint PK_access_control_AccesPoints primary key (Id),
-	constraint FK_access_control_AccessPoints_Access_Level foreign key (LevelId) references access_control.AccessLevels(Id)
+	constraint FK_access_control_AccessPoints_Access_Level foreign key (LevelId) references access_control.AccessLevels(Id),
+	constraint FK_access_control_AccessPoints_Direction foreign key(DirectionId) references access_control.Direction(Id)
 );
 go
 
-create unique index uidx_access_control_AccessPoints_Identifier on access_control.AccessPoints(Identifier);
-create index idx_access_control_AccessPoints_LevelId on access_control.AccessPoints(LevelId);
+create unique index uidx_access_control_AccessPoints_SerialNumber on access_control.AccessPoints(SerialNumber);
+create index idx_access_control_AccessPoints_Level on access_control.AccessPoints(LevelId);
+create index idx_access_control_AccessPoints_Direction on access_control.AccessPoints(DirectionID);
 go
 
 create trigger tr_access_control_AccessPoints_ModificationDate 
@@ -203,7 +221,9 @@ create table administration.UsersRoles
 	UserId int not null,
 	RoleId int not null,
 
-	constraint PK_administration_UserRoles primary key(UserId, RoleId)
+	constraint PK_administration_UsersRoles primary key(UserId, RoleId),
+	constraint FK_administration_UsersRoles foreign key (UserId) references administration.Users(Id) on delete cascade,
+	constraint FK_administration_Users_Roles foreign Key (RoleId) references administration.Roles(Id)
 );
 go
 
@@ -215,7 +235,7 @@ create table administration.RefreshTokens
 	Token nvarchar(100) not null
 
 	constraint PK_administration_RefreshToken primary key (Id),
-	constraint FK_administration_RefereshToken_Users foreign key (Id) references administration.Users(Id)
+	constraint FK_administration_RefereshToken_Users foreign key (Id) references administration.Users(Id) on delete cascade
 );
 go
 
@@ -234,7 +254,7 @@ if object_id('administration.f_get_user', 'IF') is not null
 	drop function administration.f_get_user;
 go
 
-create function access_control.f_get_access_level_for_access_point(@identifier uniqueidentifier)
+create function access_control.f_get_access_level_for_access_point(@serial_number nvarchar(400))
 returns int
 as
 begin	
@@ -243,7 +263,7 @@ begin
 	select
 		@access_level = ap.LevelId
 	from access_control.AccessPoints as ap
-	where ap.Identifier = @identifier
+	where ap.SerialNumber = @serial_number
 
 	return @access_level;
 end
@@ -285,20 +305,28 @@ go
 
 -- procedures
 
-if object_id('administration.usp_insert_user', 'P') is not null
-	drop procedure administration.usp_insert_user;
-go
-
-if object_id('administration.usp_insert_or_update_tag', 'P') is not null
-	drop procedure administration.usp_insert_or_update_tag;
-go
-
 if object_id('administration.usp_insert_user_if_not_exists', 'P') is not null
 	drop procedure administration.usp_insert_user_if_not_exists;
 go
 
-if object_id('administration.usp_insert_or_update_access_point', 'P') is not null
-	drop procedure administration.usp_insert_or_update_access_point;
+if object_id('access_control.usp_insert_tag_if_not_exists', 'P') is not null
+	drop procedure access_control.usp_insert_tag_if_not_exists;
+go
+
+if object_id('access_control.usp_insert_or_update_tag', 'P') is not null
+	drop procedure access_control.usp_insert_or_update_tag;
+go
+
+if object_id('access_control.usp_insert_user_if_not_exists', 'P') is not null
+	drop procedure access_control.usp_insert_user_if_not_exists;
+go
+
+if object_id('access_control.usp_insert_access_point_if_not_exists', 'P') is not null
+	drop procedure access_control.usp_insert_access_point_if_not_exists;
+go
+
+if object_id('access_control.usp_insert_or_update_access_point', 'P') is not null
+	drop procedure access_control.usp_insert_or_update_access_point;
 go
 
 if object_id('administration.usp_replace_refresh_token', 'P') is not null
@@ -317,7 +345,7 @@ create type dbo.IntList as table
 go
 
 
-create procedure administration.usp_insert_or_update_tag
+create procedure access_control.usp_insert_or_update_tag
 	@number nvarchar(100),
 	@level_id int,
 	@is_active bit,
@@ -346,24 +374,48 @@ begin
 		set 
 			IsActive = iif(@is_active is not null, @is_active, IsActive),
 			IsDeleted = iif(@is_deleted is not null, @is_deleted, IsDeleted),
-			UserId = iif(@user_id is not null, @user_id, UserId)
+			UserId = iif(@user_id is not null, @user_id, UserId),
+			LevelId = iif(@level_id is not null, @level_id, LevelId)
+		where Id = @identity
 	end
 
 	return @added;
 end;
 go
 
-create procedure administration.usp_insert_user_if_not_exists
+create procedure access_control.usp_insert_tag_if_not_exists
+	@number nvarchar(100),
+	@level_id int,
+	@is_active bit,
+	@is_deleted bit,
+	@user_id int,
+	@identity int output
+as
+begin
+	set nocount on;
+
+	declare @added bit = 0;
+
+	set @identity = (select t.Id from access_control.Tags as t where t.Number = @number);
+
+	if @identity is null or @identity = 0
+		exec @added = access_control.usp_insert_or_update_tag @number, @level_id, @is_active, @is_deleted, @user_id, @identity output
+
+	return @added;
+end;
+go
+
+create procedure access_control.usp_insert_user_if_not_exists
 	@username nvarchar(400),
 	@identity int output
 as
 begin	
 	set nocount on;
 
-	set @identity = (select top 1 x.Name from access_control.Users as x where x.Name = @username);
-	declare @added bit = iif(@identity is not null and @identity <> 0, 1, 0);
+	set @identity = (select top 1 x.Id from access_control.Users as x where x.Name = @username);
+	declare @added bit = iif(@identity is null or @identity = 0, 1, 0);
 
-	if @identity is null or @identity = 0
+	if @added = 1
 	begin
 		insert into access_control.Users([Name]) values(@username);
 		set @identity = SCOPE_IDENTITY();
@@ -373,23 +425,44 @@ begin
 end;
 go
 
-create procedure administration.usp_insert_or_update_access_point
-	@identifier uniqueidentifier,
+create procedure access_control.usp_insert_access_point_if_not_exists
+	@serial_number nvarchar(400),
 	@description nvarchar(max),
 	@is_active bit,
 	@level_id int,
+	@direction_id int,
+	@identity int output
+as
+begin
+	set @identity = (select top 1 x.Id from access_control.AccessPoints as x where x.SerialNumber = @serial_number);
+	declare @added bit;
+	if @identity is null or @identity = 0
+	begin
+		exec @added = access_control.usp_insert_or_update_access_point @serial_number, @description, @is_active, @level_id, @direction_id, @identity output
+	end
+
+	return @added;
+end;
+go
+
+create procedure access_control.usp_insert_or_update_access_point
+	@serial_number nvarchar(400),
+	@description nvarchar(max),
+	@is_active bit,
+	@level_id int,
+	@direction_id int,
 	@identity int output
 as
 begin
 	set nocount on;
 	
-	set @identity = (select top 1 x.Id from access_control.AccessPoints as x where x.Identifier = @identifier);
+	set @identity = (select top 1 x.Id from access_control.AccessPoints as x where x.SerialNumber = @serial_number);
 	declare @added bit = iif(@identity is null or @identity = 0, 1, 0);
 
 	if @added = 1
 	begin
-		insert into access_control.AccessPoints(Identifier, [Description], IsActive, LevelId) 
-		values(@identifier, @description, @is_active, @level_id);
+		insert into access_control.AccessPoints(SerialNumber, [Description], IsActive, LevelId, DirectionId) 
+		values(@serial_number, @description, @is_active, @level_id, @direction_id);
 		set @identity = SCOPE_IDENTITY();
 	end
 	else
@@ -398,29 +471,40 @@ begin
 			set
 				[Description] = iif(@description is not null, @description, [Description]),
 				[IsActive] = iif(@is_active is not null, @is_active, IsActive),
-				[LevelId] = iif(@level_id is not null, @level_id, LevelId)
+				[LevelId] = iif(@level_id is not null, @level_id, LevelId),
+				[DirectionId] = iif(@direction_id is not null, @direction_id, DirectionId)
+		where SerialNumber = @serial_number
 	end
 
 	return @added;
 end;
 go
 
-create procedure administration.usp_insert_user
+create procedure administration.usp_insert_user_if_not_exists
 	@email nvarchar(400),
 	@password_hash nvarchar(max),
 	@roles dbo.IntList readonly,
 	@identity int output
 as
 begin
-	insert into administration.Users(Email, PasswordHash) values (@email, @password_hash)
+	set nocount on;
 
-	set @identity = SCOPE_IDENTITY();
+	set @identity = (select u.Id from administration.Users as u where u.Email = @email)
+	declare @added bit = iif(@identity is null or @identity = 0, 1, 0);
 
-	insert into administration.UsersRoles(UserId, RoleId)
-	select
-		@identity,
-		r.[Value]
-	from @roles as r
+	if @added = 1
+	begin
+		insert into administration.Users(Email, PasswordHash) values (@email, @password_hash)
+		set @identity = SCOPE_IDENTITY();
+
+		insert into administration.UsersRoles(UserId, RoleId)
+		select
+			@identity,
+			r.[Value]
+		from @roles as r
+	end
+
+	return @added;
 end;
 go
 

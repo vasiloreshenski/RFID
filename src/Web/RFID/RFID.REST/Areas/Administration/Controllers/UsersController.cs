@@ -12,7 +12,6 @@
     [ApiController]
     [Route("[area]/api/users")]
     [Area("Administration")]
-    [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly Areas.Administration.Commands.CommandFactory commandFactory;
@@ -27,9 +26,16 @@
         public async Task<IActionResult> RegisterAsync([FromBody]RegisterAdministrationUserRequestModel model)
         {
             var command = this.commandFactory.CreateRegisterAdministrationUserCommand();
-            await command.RegisterAsync(model);
+            var result = await command.RegisterAsync(model);
 
-            return this.Ok();
+            if (result.Success)
+            {
+                return this.Ok();
+            }
+            else
+            {
+                return this.BadRequest(result);
+            }
         }
     }
 }

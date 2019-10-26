@@ -16,6 +16,7 @@
         /// Email for the user - this will be your login account
         /// </summary>
         [Required]
+        [EmailAddress]
         public String Email { get; set; }
 
         /// <summary>
@@ -28,6 +29,7 @@
         /// Roles for the user
         /// </summary>
         [BindRequired]
+        [EnumDataType(typeof(UserRoles))]
         public UserRoles Roles { get; set; }
     }
 }

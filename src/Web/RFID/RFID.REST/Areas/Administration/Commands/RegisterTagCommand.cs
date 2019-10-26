@@ -2,6 +2,7 @@
 {
     using RFID.REST.Areas.Administration.Models;
     using RFID.REST.Database;
+    using RFID.REST.Models;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -26,14 +27,17 @@
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public async Task<bool> RegisterAsync(RegisterTagRequestModel model)
+        public async Task<CommandResult> RegisterAsync(RegisterTagRequestModel model)
         {
-            using (var transaction = await this.sqlConnectionFactory.CreateTransactionAsync())
+            using (var connection = await this.sqlConnectionFactory.CreateConnectionAsync(true))
+            using (var transaction = connection.BeginTransaction())
             {
                 var userDbResult = await this.database.InsertAccessPointUserAsync(model.User.Name, transaction);
                 var tagDbResult = await this.database.InsertTagIfNotExistsAsync(model.Number, userDbResult.Id, model.AccessLevel, transaction);
 
-                return tagDbResult.IsInserted;
+                transaction.Commit();
+
+                return CommandResult.FromDbResult(tagDbResult);
             }
         }
     }

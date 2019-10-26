@@ -22,11 +22,13 @@
         /// Level of access for the current tag
         /// </summary>
         [Required]
+        [EnumDataType(typeof(RFID.REST.Models.AccessLevel))]
         public AccessLevel AccessLevel { get; set; }
 
         /// <summary>
         /// User associated with the current tag
         /// </summary>
+        [Required]
         public RegisterTagUserRequestModel User { get; set; }
     }
 }

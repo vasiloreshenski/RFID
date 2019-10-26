@@ -3,6 +3,7 @@
     using Microsoft.AspNetCore.Identity;
     using RFID.REST.Areas.Administration.Models;
     using RFID.REST.Database;
+    using RFID.REST.Models;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -29,17 +30,23 @@
         /// </summary>
         /// <param name="model">user model to be registered</param>
         /// <returns></returns>
-        public async Task RegisterAsync(RegisterAdministrationUserRequestModel model)
+        public async Task<CommandResult> RegisterAsync(RegisterAdministrationUserRequestModel model)
         {
-            using (var transaction = await this.sqlConnectionFactory.CreateTransactionAsync())
+            using (var connection = await this.sqlConnectionFactory.CreateConnectionAsync(true))
+            using (var transaction = connection.BeginTransaction())
             {
                 try
                 {
                     var passwordHash = this.passwordHasher.HashPassword(null, model.Password);
-                    
-                    await this.database.InsertAdministrationUserAsync(email: model.Email, passwordHash: passwordHash, roles: model.Roles, transaction: transaction);
+
+                    var dbResult = await this.database.InsertAdministrationUserAsync(email: model.Email, passwordHash: passwordHash, roles: model.Roles, transaction: transaction);
+
+                    var refreshToken = Auth.Services.Auth.GenerateRefereshToken();
+                    await this.database.ReplaceRefreshTokenAsync(model.Email, refreshToken, transaction);
 
                     transaction.Commit();
+
+                    return CommandResult.FromDbResult(dbResult);
                 }
                 catch
                 {

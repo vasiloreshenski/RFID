@@ -15,12 +15,12 @@
         /// Tag of the id to be checked
         /// </summary>
         [Required]
-        public int TagId { get; set; }
+        public String TagNumber { get; set; }
 
         /// <summary>
         /// Identifier of the access point against which the tag is checked
         /// </summary>
         [Required]
-        public Guid AccessPointIdentifier { get; set; }
+        public String AccessPointSerialNumber { get; set; }
     }
 }

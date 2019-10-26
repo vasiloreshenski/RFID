@@ -36,6 +36,6 @@
         /// <summary>
         /// Access level for the specified tag
         /// </summary>
-        public AccessLevel AccessLevel { get; set; }
+        public AccessLevel? AccessLevel { get; set; }
     }
 }

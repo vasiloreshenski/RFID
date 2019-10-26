@@ -10,32 +10,25 @@
     /// </summary>
     public class InsertOrUpdDbResult
     {
-        public static InsertOrUpdDbResult Create(int id, bool? isInserted)
+        public static InsertOrUpdDbResult Create(int id, bool isInserted, bool isUpdated)
         {
-            if (isInserted == null)
+            if (id == default)
             {
                 return NotFound;
             }
-            else
-            {
-                return Create(id, isInserted.Value);
-            }
-        }
 
-        public static InsertOrUpdDbResult Create(int id, bool isInserted)
-        {
             return new InsertOrUpdDbResult
             {
                 Id = id,
                 IsInserted = isInserted,
-                IsUpdated = isInserted == false && id != default
+                IsUpdated = isUpdated
             };
         }
 
         /// <summary>
         /// Represents not updated and not inserted state
         /// </summary>
-        public static InsertOrUpdDbResult NotFound => Create(0, false);
+        public static InsertOrUpdDbResult NotFound { get; } = new InsertOrUpdDbResult { Id = 0, IsInserted = false, IsUpdated = false };
 
         /// <summary>
         /// Identity of the table
@@ -56,5 +49,7 @@
         /// True if not found
         /// </summary>
         public bool IsNotFound => Object.ReferenceEquals(this, NotFound);
+
+        public bool HasIdentity => this.Id != default;
     }
 }

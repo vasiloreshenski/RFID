@@ -10,27 +10,35 @@
     /// <summary>
     /// Model representing access point to be registered
     /// </summary>
-    public class RegisterUpdateAccessPointRequestModel
+    public class RegisterAccessPointRequestModel
     {
         /// <summary>
         /// Access's point identifier
         /// </summary>
         [Required]
-        public Guid Identifier { get; set; }
+        public String SerialNumber { get; set; }
         
         /// <summary>
         /// Description of the access point
         /// </summary>
+        [Required]
         public String Description { get; set; }
 
         /// <summary>
         /// Is active state of the access point
         /// </summary>
-        public bool? IsActive { get; set; }
+        [Required]
+        public bool IsActive { get; set; }
 
         /// <summary>
         /// Access level for the access point
         /// </summary>
-        public AccessLevel? AccessLevel { get; set; }
+        [Required]
+        [EnumDataType(typeof(AccessLevel))]
+        public AccessLevel AccessLevel { get; set; }
+
+        [Required]
+        [EnumDataType(typeof(AccessPointDirectionType))]
+        public AccessPointDirectionType Direction { get; set; }
     }
 }

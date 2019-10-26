@@ -1,8 +1,10 @@
 ﻿namespace RFID.REST.Areas.Administration.Controllers
 {
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using RFID.REST.Areas.Administration.Commands;
     using RFID.REST.Areas.Administration.Models;
+    using RFID.REST.Common;
     using RFID.REST.Models;
     using System;
     using System.Collections.Generic;
@@ -12,9 +14,10 @@
     /// <summary>
     /// Controller used for administration purposes like registering, deleting, deactivating tags
     /// </summary>
-    [Route("api/tags")]
+    [Route("[area]/api/tags")]
     [Area("administration")]
     [ApiController]
+    [Authorize(PolicyNames.AdminPolicy)]
     public class TagsController : ControllerBase
     {
         private readonly CommandFactory commandFactory;
@@ -32,18 +35,18 @@
         /// 200 OK if the model was registered successfully. 
         /// 400 if the request model is not valid or the tag is already registered.
         /// </returns>
-        [HttpPost("/register")]
+        [HttpPost("register")]
         public async Task<IActionResult> RegisterAsync(RegisterTagRequestModel model)
         {
             var command = this.commandFactory.CreateRegisterTagCommand();
-            var registered = await command.RegisterAsync(model);
-            if (registered)
+            var commandResult = await command.RegisterAsync(model);
+            if (commandResult.Success)
             {
                 return this.Ok();
             }
             else
             {
-                return this.BadRequest();
+                return this.BadRequest(commandResult);
             }
         }
           
@@ -56,12 +59,12 @@
         /// 400 if the request model is invalid
         /// 404 if the tag with the specified id was not found
         /// </returns>
-        [HttpPatch("/activate")]
-        public async Task<IActionResult> ActivateAsync(int tagId)
+        [HttpPatch("activate")]
+        public async Task<IActionResult> ActivateAsync(Identity identity)
         {
             var command = this.commandFactory.CreateUpdateTagCommand();
-            var found = await command.UpdateAsync(new UpdateTagRequestModel { TagId = tagId, IsActive = true });
-            if (found)
+            var commandResult = await command.UpdateAsync(new UpdateTagRequestModel { TagId = identity.Id, IsActive = true });
+            if (commandResult.Success)
             {
                 return this.Ok();
             }
@@ -75,12 +78,12 @@
         /// Deactivates the specified tag
         /// </summary>
         /// <returns></returns>
-        [HttpPatch("/deactivate")]
-        public async Task<IActionResult> DeActivateAsync(int tagId)
+        [HttpPatch("deactivate")]
+        public async Task<IActionResult> DeActivateAsync(Identity identity)
         {
             var command = this.commandFactory.CreateUpdateTagCommand();
-            var found = await command.UpdateAsync(new UpdateTagRequestModel { TagId = tagId, IsActive = false });
-            if (found)
+            var commandResult = await command.UpdateAsync(new UpdateTagRequestModel { TagId = identity.Id, IsActive = false });
+            if (commandResult.Success)
             {
                 return this.Ok();
             }
@@ -95,13 +98,13 @@
         /// </summary>
         /// <param name="tagId">id of the tag</param>
         /// <returns></returns>
-        [HttpPatch("/delete")]
-        public async Task<IActionResult> DeleteAsync(int tagId)
+        [HttpPatch("delete")]
+        public async Task<IActionResult> DeleteAsync(Identity identity)
         {
             var command = this.commandFactory.CreateUpdateTagCommand();
-            var found = await command.UpdateAsync(new UpdateTagRequestModel { TagId = tagId, IsDeleted = true });
+            var commandResult = await command.UpdateAsync(new UpdateTagRequestModel { TagId = identity.Id, IsDeleted = true });
 
-            if (found)
+            if (commandResult.Success)
             {
                 return this.Ok();
             }
@@ -115,13 +118,13 @@
         /// Changes the access level of the specified tag
         /// </summary>
         /// <returns></returns>
-        [HttpPatch("/accessLevel")]
-        public async Task<IActionResult> ChangeAccessLevelAsync(int tagId, AccessLevel accessLevel)
+        [HttpPatch("accessLevel")]
+        public async Task<IActionResult> ChangeAccessLevelAsync(ChangeTagAccessLevelRequestModel requestModel)
         {
             var command = this.commandFactory.CreateUpdateTagCommand();
-            var found = await command.UpdateAsync(new UpdateTagRequestModel { TagId = tagId, AccessLevel = accessLevel });
+            var commandResult = await command.UpdateAsync(new UpdateTagRequestModel { TagId = requestModel.Id, AccessLevel = requestModel.AccessLevel });
 
-            if (found)
+            if (commandResult.Success)
             {
                 return this.Ok();
             }

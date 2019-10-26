@@ -32,7 +32,7 @@
         public String Token { get; }
 
         /// <summary>
-        /// Token expiration in secods
+        /// Token expiration in seconds
         /// </summary>
         public int ExpireInSeconds { get; }
 

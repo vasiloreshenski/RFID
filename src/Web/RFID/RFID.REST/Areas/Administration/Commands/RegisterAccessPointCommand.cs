@@ -6,16 +6,17 @@
     using System.Threading.Tasks;
     using RFID.REST.Areas.Administration.Models;
     using RFID.REST.Database;
+    using RFID.REST.Models;
 
     /// <summary>
     /// Command for registering or updating access points
     /// </summary>
-    public class RegisterOrUpdateAccessPointCommand
+    public class RegisterAccessPointCommand
     {
         private readonly SqlConnectionFactory connectionFactory;
         private readonly Database database;
 
-        public RegisterOrUpdateAccessPointCommand(SqlConnectionFactory connectionFactory, Database database)
+        public RegisterAccessPointCommand(SqlConnectionFactory connectionFactory, Database database)
         {
             this.connectionFactory = connectionFactory;
             this.database = database;
@@ -26,21 +27,25 @@
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public async Task<bool> RegisterOrUpdateAsync(RegisterUpdateAccessPointRequestModel model)
+        public async Task<CommandResult> RegisterAsync(RegisterAccessPointRequestModel model)
         {
-            using (var transaction = await this.connectionFactory.CreateTransactionAsync())
+            using (var connection = await this.connectionFactory.CreateConnectionAsync(true))
+            using (var transaction = connection.BeginTransaction())
             {
                 try
                 {
-                    var dbResult = await this.database.InsertOrUpdateAccessPointAsync(
-                        identifier: model.Identifier, 
-                        transaction: transaction, 
-                        description: model.Description, 
-                        IsActive: model.IsActive, 
-                        accessLevel: model.AccessLevel
+                    var dbResult = await this.database.InsertAccessPointIfNotExistsAsync(
+                        serialNumber: model.SerialNumber,
+                        transaction: transaction,
+                        description: model.Description,
+                        IsActive: model.IsActive,
+                        accessLevel: model.AccessLevel,
+                        direction: model.Direction
                     );
 
-                    return dbResult.IsInserted;
+                    transaction.Commit();
+
+                    return CommandResult.FromDbResult(dbResult);
                 }
                 catch
                 {

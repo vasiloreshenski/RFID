@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Data;
+    using System.Data.Common;
     using System.Data.SqlClient;
     using System.Linq;
     using System.Threading.Tasks;
@@ -37,18 +38,6 @@
             }
 
             return connection;
-        }
-
-        /// <summary>
-        /// Creates new transaction
-        /// </summary>
-        /// <returns></returns>
-        public async Task<IDbTransaction> CreateTransactionAsync()
-        {
-            var connection = await this.CreateConnectionAsync(open: true);
-            var transaction = connection.BeginTransaction();
-
-            return transaction;
         }
     }
 }

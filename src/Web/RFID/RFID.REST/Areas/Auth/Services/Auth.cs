@@ -61,6 +61,17 @@
         /// <returns></returns>
         public AuthToken GenerateToken(String email, UserRoles roles)
         {
+            return this.GenerateToken(email, roles, SecurityAlg);
+        }
+
+        /// <summary>
+        /// Generates token with the email and role claims
+        /// </summary>
+        /// <param name="email">Email</param>
+        /// <param name="roles">Role</param>
+        /// <returns></returns>
+        public AuthToken GenerateToken(String email, UserRoles roles, String alg)
+        {
             // authentication successful so generate jwt token
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -74,7 +85,7 @@
                     new Claim(ClaimTypes.Name, email),
                     new Claim(ClaimTypes.Role, roles.ToString())
                 }),
-                SigningCredentials = new SigningCredentials(this.authSettings.SecurityKey, SecurityAlg)
+                SigningCredentials = new SigningCredentials(this.authSettings.SecurityKey, alg)
             };
             var token = tokenHandler.CreateJwtSecurityToken(tokenDescriptor);
             var tokenStr = tokenHandler.WriteToken(token);
@@ -83,7 +94,7 @@
 
             return new AuthToken(tokenStr, refreshToken);
         }
-
+        
         /// <summary>
         /// Returns claims info the specified expired token.
         /// </summary>

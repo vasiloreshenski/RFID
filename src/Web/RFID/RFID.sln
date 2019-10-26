@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.438
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RFID.REST", "RFID.REST\RFID.REST.csproj", "{1633767E-7EB7-4B71-B586-0AAF1AEC7966}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RFID.REST", "RFID.REST\RFID.REST.csproj", "{1633767E-7EB7-4B71-B586-0AAF1AEC7966}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RFID.REST.Test", "RFID.REST.Test\RFID.REST.Test.csproj", "{BFBE38D4-DACA-49AF-B056-FB93BB6192C2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{1633767E-7EB7-4B71-B586-0AAF1AEC7966}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1633767E-7EB7-4B71-B586-0AAF1AEC7966}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1633767E-7EB7-4B71-B586-0AAF1AEC7966}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFBE38D4-DACA-49AF-B056-FB93BB6192C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFBE38D4-DACA-49AF-B056-FB93BB6192C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFBE38D4-DACA-49AF-B056-FB93BB6192C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFBE38D4-DACA-49AF-B056-FB93BB6192C2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
