@@ -1,0 +1,9 @@
+<form>
+    <div>
+        <input placeholder="Email" type="text" #emailInput/>
+    </div>
+    <div>
+        <input placeholder="Password" type="password" #passwordInput/>
+    </div>
+    <button (click)="login(emailInput.value, passwordInput.value)">Login</button>
+</form>

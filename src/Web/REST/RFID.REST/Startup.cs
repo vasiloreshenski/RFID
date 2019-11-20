@@ -39,12 +39,14 @@ namespace RFID.REST
             this.ConfigureJwtService(services);
             this.ConfigureRfidServices(services);
             ConfigureAuthorizationPolicies(services);
+            services.AddCors();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseExceptionMiddleware();
+            app.UseCors(b => b.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             app.UseAuthentication();
             app.UseMvc();
         }
@@ -87,6 +89,7 @@ namespace RFID.REST
             services.AddSingleton<Areas.Auth.Commands.CommandFactory>();
 
             // access control
+            services.AddSingleton<Areas.AccessControl.Commands.CommandFactory>();
         }
 
         private void ConfigureJwtService(IServiceCollection services)

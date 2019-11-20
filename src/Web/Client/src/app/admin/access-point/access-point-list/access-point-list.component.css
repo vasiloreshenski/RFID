@@ -1,0 +1,14 @@
+#apm-container {
+    width: 80%;
+    display: grid;
+    grid-template-columns: 33% 33% 33%;
+}
+
+#apm-container h3 {
+    text-align: center;
+}
+
+.grid-item {
+    margin:1.2em;
+    border: 1px solid black;
+}

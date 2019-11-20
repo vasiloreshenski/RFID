@@ -29,6 +29,6 @@
         /// User associated with the current tag
         /// </summary>
         [Required]
-        public RegisterTagUserRequestModel User { get; set; }
+        public String UserName { get; set; }
     }
 }

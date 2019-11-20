@@ -10,12 +10,14 @@
     public class UpdateAccessPointRequestModel
     {
         [Required]
-        public int AccessPointId { get; set; }
+        public int Id { get; set; }
 
         public String Description { get; set; }
 
         public bool? IsActive { get; set; }
         
         public AccessLevel? AccessLevel { get; set; }
+
+        public AccessPointDirectionType? Direction { get; set; }
     }
 }

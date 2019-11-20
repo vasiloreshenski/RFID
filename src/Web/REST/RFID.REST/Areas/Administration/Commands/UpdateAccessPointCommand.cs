@@ -27,11 +27,12 @@ namespace RFID.REST.Areas.Administration.Commands
                 try
                 {
                     var dbResult = await database.UpdateAccessPointAsync(
-                        accessPointId: requestModel.AccessPointId,
+                        id: requestModel.Id,
                         transaction: transaction,
                         description: requestModel.Description,
                         isActive: requestModel.IsActive,
-                        accessLevel: requestModel.AccessLevel
+                        accessLevel: requestModel.AccessLevel,
+                        direction: requestModel.Direction
                     );
 
                     transaction.Commit();

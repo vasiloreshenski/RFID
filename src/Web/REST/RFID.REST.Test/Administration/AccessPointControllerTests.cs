@@ -1,5 +1,6 @@
 ﻿namespace RFID.REST.Test.Administration
 {
+    using RFID.REST.Areas.Administration.Models;
     using RFID.REST.Models;
     using RFID.REST.Test.Common;
     using System;
@@ -106,6 +107,33 @@
             }
 
             await assertDatabase.AssertCntAsync(userRM);
+        }
+
+        [Fact]
+        public async Task Register_When_UnKnown_Access_Point()
+        {
+            var assertDatabase = await RfidDatabaseAssert.CreateAsync();
+            var userRM = Examples.Administrator();
+            var accessPointRM = Examples.AccessPoint();
+
+            await RfidHttpClient.RegisterUserAsync(userRM);
+            using (var authTokenResponseMessage = await RfidHttpClient.GenerateAuthTokenAsync(userRM))
+            {
+                var authToken = await AuthTokenHelper.FromHttpResponseMessageAsync(authTokenResponseMessage);
+                var token = await authToken.GetTokenAsync();
+
+                using (var httpResponse = await RfidHttpClient.CheckAccessAsync("unknown", accessPointRM.SerialNumber))
+                {
+                    RfidAssert.AssertHttpResponse(httpResponse, System.Net.HttpStatusCode.NotFound);
+                }
+
+                using (var httpResponse = await RfidHttpClient.RegisterAccessPointAsync(accessPointRM, token))
+                {
+                    RfidAssert.AssertHttpResponse(httpResponse, System.Net.HttpStatusCode.OK);
+                }
+            }
+
+            await assertDatabase.AssertCntAsync(userRM, accessPointRM);
         }
 
         [Theory]
@@ -304,7 +332,6 @@
 
         #endregion Activate
 
-
         #region De-activate
 
         [Fact]
@@ -465,7 +492,6 @@
 
         #endregion De-activate
 
-
         #region De-activate
 
         [Fact]
@@ -623,5 +649,192 @@
         }
 
         #endregion De-activate
+
+        #region Get all active
+
+        [Fact]
+        public async Task Get_All_Active_When_No_In_The_Database()
+        {
+            var assertDatabase = await RfidDatabaseAssert.CreateAsync();
+            var userRM = Examples.Administrator();
+
+            await RfidHttpClient.RegisterUserAsync(userRM);
+            using (var authTokenResponseMessage = await RfidHttpClient.GenerateAuthTokenAsync(userRM))
+            {
+                var authToken = await AuthTokenHelper.FromHttpResponseMessageAsync(authTokenResponseMessage);
+                var token = await authToken.GetTokenAsync();
+
+                var actual = await RfidHttpClient.GetAllActiveAccessPointsAsync(token);
+
+                Assert.Equal(expected: 0, actual: actual.Count);
+            }
+        }
+
+        [Fact]
+        public async Task Get_All_Active_When_When_Several_In_Database()
+        {
+            var assertDatabase = await RfidDatabaseAssert.CreateAsync();
+            var userRM = Examples.Administrator();
+            var accessPointRM = Examples.AccessPoint();
+
+            await RfidHttpClient.RegisterUserAsync(userRM);
+            using (var authTokenResponseMessage = await RfidHttpClient.GenerateAuthTokenAsync(userRM))
+            {
+                var authToken = await AuthTokenHelper.FromHttpResponseMessageAsync(authTokenResponseMessage);
+                var token = await authToken.GetTokenAsync();
+
+                using (await RfidHttpClient.RegisterAccessPointAsync(Examples.AccessPoint("1"), token))
+                using (await RfidHttpClient.RegisterAccessPointAsync(Examples.AccessPoint("2"), token))
+                using (await RfidHttpClient.RegisterAccessPointAsync(Examples.AccessPoint("3"), token))
+                using (await RfidHttpClient.RegisterAccessPointAsync(Examples.AccessPoint("4"), token))
+                {
+                    var actual = await RfidHttpClient.GetAllActiveAccessPointsAsync(token);
+
+                    Assert.Equal(expected: 4, actual: actual.Count);
+                }
+            }
+        }
+
+        #endregion Get all active
+
+        #region Update
+
+        [Fact]
+        public async Task Update_When_All_Properties_Provided()
+        {
+            var assertDatabase = await RfidDatabaseAssert.CreateAsync();
+            var userRM = Examples.Administrator();
+            var accessPointRM = Examples.AccessPoint();
+            var accessPointId = 0;
+            var updatedDescription = $"{Guid.NewGuid()}";
+
+            await RfidHttpClient.RegisterUserAsync(userRM);
+            using (var authTokenResponseMessage = await RfidHttpClient.GenerateAuthTokenAsync(userRM))
+            {
+                var authToken = await AuthTokenHelper.FromHttpResponseMessageAsync(authTokenResponseMessage);
+                var token = await authToken.GetTokenAsync();
+
+                using (var httpResponse = await RfidHttpClient.RegisterAccessPointAsync(accessPointRM, token))
+                {
+                    RfidAssert.AssertHttpResponse(httpResponse, System.Net.HttpStatusCode.OK);
+                }
+
+                accessPointId = await RfidDatabase.GetAccessPointIdBySerialNumberAsync(accessPointRM.SerialNumber);
+                var updateRm = new UpdateAccessPointRequestModel
+                {
+                    Id = accessPointId,
+                    AccessLevel = AccessLevel.High,
+                    Description = updatedDescription,
+                    Direction = AccessPointDirectionType.Exit,
+                };
+
+                using (var httpResponse = await RfidHttpClient.UpdateAccessPointAsync(updateRm, token))
+                {
+                    RfidAssert.AssertHttpResponse(httpResponse, System.Net.HttpStatusCode.OK);
+                }
+            }
+
+            await assertDatabase.AssertCntAsync(userRM, accessPointRM);
+            await assertDatabase.AssertStateAsync("access_control.AccessPoints", accessPointId, new
+            {
+                Id = accessPointId,
+                LevelId = (int)AccessLevel.High,
+                DirectionId = (int)AccessPointDirectionType.Exit,
+                SerialNumber = accessPointRM.SerialNumber,
+                Description = updatedDescription
+            });
+        }
+
+        #endregion Update
+
+        #region Delete
+
+        [Fact]
+        public async Task Delete_When_Exists()
+        {
+            var assertDatabase = await RfidDatabaseAssert.CreateAsync();
+            var userRM = Examples.Administrator();
+            var accessPointRM = Examples.AccessPoint();
+
+            await RfidHttpClient.RegisterUserAsync(userRM);
+            using (var authTokenResponseMessage = await RfidHttpClient.GenerateAuthTokenAsync(userRM))
+            {
+                var authToken = await AuthTokenHelper.FromHttpResponseMessageAsync(authTokenResponseMessage);
+                var token = await authToken.GetTokenAsync();
+
+                using (var httpResponse = await RfidHttpClient.RegisterAccessPointAsync(accessPointRM, token))
+                {
+                    RfidAssert.AssertHttpResponse(httpResponse, System.Net.HttpStatusCode.OK);
+                }
+
+                using (var httpResponse = await RfidHttpClient.DeleteAccessPointAsync(accessPointRM.SerialNumber, token))
+                {
+                    RfidAssert.AssertHttpResponse(httpResponse, System.Net.HttpStatusCode.OK);
+                }
+            }
+
+            await assertDatabase.AssertCntAsync(userRM);
+        }
+
+        [Fact]
+        public async Task Delete_When_Already_Deleted()
+        {
+            var assertDatabase = await RfidDatabaseAssert.CreateAsync();
+            var userRM = Examples.Administrator();
+            var accessPointRM = Examples.AccessPoint();
+
+            await RfidHttpClient.RegisterUserAsync(userRM);
+            using (var authTokenResponseMessage = await RfidHttpClient.GenerateAuthTokenAsync(userRM))
+            {
+                var authToken = await AuthTokenHelper.FromHttpResponseMessageAsync(authTokenResponseMessage);
+                var token = await authToken.GetTokenAsync();
+
+                using (var httpResponse = await RfidHttpClient.RegisterAccessPointAsync(accessPointRM, token))
+                {
+                    RfidAssert.AssertHttpResponse(httpResponse, System.Net.HttpStatusCode.OK);
+                }
+
+                using (var httpResponse = await RfidHttpClient.DeleteAccessPointAsync(accessPointRM.SerialNumber, token))
+                {
+                    RfidAssert.AssertHttpResponse(httpResponse, System.Net.HttpStatusCode.OK);
+                }
+
+                using (var httpResponse = await RfidHttpClient.DeleteAccessPointAsync(accessPointRM.SerialNumber, token))
+                {
+                    RfidAssert.AssertHttpResponse(httpResponse, System.Net.HttpStatusCode.OK);
+                }
+            }
+
+            await assertDatabase.AssertCntAsync(userRM);
+        }
+
+        [Fact]
+        public async Task Delete_When_Does_Not_Exists()
+        {
+            var assertDatabase = await RfidDatabaseAssert.CreateAsync();
+            var userRM = Examples.Administrator();
+            var accessPointRM = Examples.AccessPoint();
+
+            await RfidHttpClient.RegisterUserAsync(userRM);
+            using (var authTokenResponseMessage = await RfidHttpClient.GenerateAuthTokenAsync(userRM))
+            {
+                var authToken = await AuthTokenHelper.FromHttpResponseMessageAsync(authTokenResponseMessage);
+                var token = await authToken.GetTokenAsync();
+
+                using (var httpResponse = await RfidHttpClient.RegisterAccessPointAsync(accessPointRM, token))
+                {
+                    RfidAssert.AssertHttpResponse(httpResponse, System.Net.HttpStatusCode.OK);
+                }
+
+                using (var httpResponse = await RfidHttpClient.DeleteAccessPointAsync("unknown", token))
+                {
+                    RfidAssert.AssertHttpResponse(httpResponse, System.Net.HttpStatusCode.NotFound);
+                }
+            }
+
+            await assertDatabase.AssertCntAsync(userRM, accessPointRM);
+        }
+
+        #endregion Delete
     }
 }

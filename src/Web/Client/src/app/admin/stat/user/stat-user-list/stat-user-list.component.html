@@ -1,0 +1,19 @@
+<div>
+    <h3>Users</h3>
+    <table>
+        <thead>
+            <th>UserName</th>
+            <th>Avg. entrance time</th>
+            <th>Avg. exit time</th>
+            <th>Avg. work hour norm</th>
+        </thead>
+        <tbody>
+            <tr *ngFor="let u of users" (click)="setSelectedUser(u)" [ngClass]="{'selected': u.isSelected}">
+                <td>{{u.userName}}</td>
+                <td>{{u.avgEntranceTime}}</td>
+                <td>{{u.avgExitTime}}</td>
+                <td>{{u.avgWorkHourNorm}}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

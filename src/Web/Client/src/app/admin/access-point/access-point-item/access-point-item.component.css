@@ -1,0 +1,18 @@
+.grid {
+    display: grid;
+    grid-template-columns: auto auto;
+}
+
+.field-wrapper > .label-value {
+    margin-top: 0.8em;
+    margin-left: 1.05em;
+}
+.wide {
+    width: 90%;
+    height: 90%;
+}
+
+textarea.wide {
+    resize: none;
+    height: 100px;
+}

@@ -60,5 +60,10 @@
         {
             return new RegisterAdministrationUserCommand(this.sqlConnectionFactory, this.database, this.passwordHasher);
         }
+
+        public DeleteAccessPointCommand CreateDeleteAccessPointCommand()
+        {
+            return new DeleteAccessPointCommand(this.database, this.sqlConnectionFactory);
+        }
     }
 }

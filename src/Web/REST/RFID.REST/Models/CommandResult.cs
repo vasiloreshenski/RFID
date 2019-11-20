@@ -14,6 +14,21 @@
             return new CommandResult<T>(default(T), CommandStatus.NotFound);
         }
 
+        public static CommandResult NotFound()
+        {
+            return new CommandResult(CommandStatus.NotFound);
+        }
+
+        public static CommandResult Ok()
+        {
+            return new CommandResult(CommandStatus.Ok);
+        }
+
+        public static CommandResult UnAuthorized()
+        {
+            return new CommandResult(CommandStatus.UnAuthorized);
+        }
+
         public static CommandResult FromDbResult(InsertOrUpdDbResult dbResult)
         {
             var status = CommandStatus.None;
@@ -49,6 +64,8 @@
         public CommandStatus Status { get; }
 
         public bool Success => (int)this.Status < 100;
+        public bool IsUnAuthorized => this.Status == CommandStatus.UnAuthorized;
+        public bool IsNotFound => this.Status == CommandStatus.NotFound;
     }
 
     public class CommandResult<T> : CommandResult

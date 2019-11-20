@@ -1,0 +1,22 @@
+<div id="apm-container">
+    <div id='apm-active'>
+        <h3>Active</h3>
+        <div *ngFor="let ap of activeAccessPoints" class="grid-item">
+            <app-access-point-item [accessPoint]="ap" (accessPointUpdate)="reloadAccessPoints()">
+            </app-access-point-item>
+        </div>
+    </div>
+    <div id='apm-inactive'>
+        <h3>In-Active</h3>
+        <div *ngFor="let iap of inActiveAccessPoints" class="grid-item">
+            <app-access-point-item [accessPoint]="iap" (accessPointUpdate)="reloadAccessPoints()">
+            </app-access-point-item>
+        </div>
+    </div>
+    <div id='apm-unknown'>
+        <h3>Unknown</h3>
+        <div *ngFor="let uap of unknownAccessPoints" class="grid-item"> 
+            <app-unknown-access-point-item [unknownAccessPoint]="uap" (accessPointUpdate)="reloadAccessPoints()"></app-unknown-access-point-item>
+        </div>
+    </div>
+</div>

@@ -8,6 +8,7 @@
     using Dapper;
     using RFID.REST.Areas.Administration.Models;
     using RFID.REST.Areas.Auth.Models;
+    using RFID.REST.Areas.Stat.Models;
     using RFID.REST.Models;
 
     /// <summary>
@@ -28,7 +29,7 @@
         /// <param name="username">Username</param>
         /// <param name="transaction">Transaction</param>
         /// <returns></returns>
-        public async Task<InsertOrUpdDbResult> InsertAccessPointUserAsync(String username, IDbTransaction transaction)
+        public async Task<InsertOrUpdDbResult> InsertAccessPointUserIfNotExistsAsync(String username, IDbTransaction transaction)
         {
             var dynamicParams = new DynamicParameters(new { @username = username });
             dynamicParams.AddIdentity();
@@ -102,8 +103,8 @@
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
                 return await connection.ExecuteScalarAsync<AccessLevel?>(
-                    "select top 1 x.LevelId from access_control.AccessPoints as x where x.SerialNumber=@serial_number", 
-                    param: new { @serial_number = serialNumber}
+                    "select top 1 x.LevelId from access_control.AccessPoints as x where x.SerialNumber=@serial_number",
+                    param: new { @serial_number = serialNumber }
                 );
             }
         }
@@ -131,10 +132,10 @@
         /// <param name="accessLevel">access level of the access point</param>
         /// <returns></returns>
         public async Task<InsertOrUpdDbResult> InsertAccessPointIfNotExistsAsync(
-            String serialNumber, 
-            IDbTransaction transaction, 
-            String description, 
-            bool IsActive, 
+            String serialNumber,
+            IDbTransaction transaction,
+            String description,
+            bool IsActive,
             AccessLevel accessLevel,
             AccessPointDirectionType direction)
         {
@@ -149,21 +150,21 @@
         /// <summary>
         /// Updates the access point with the provided values. Any null values will be ignored during the update
         /// </summary>
-        /// <param name="accessPointId">access point id</param>
+        /// <param name="id">access point id</param>
         /// <param name="transaction">transaction</param>
         /// <param name="description">access point description</param>
         /// <param name="isActive">access point is active flag</param>
         /// <param name="accessLevel">access point access level</param>
         /// <returns></returns>
         public async Task<InsertOrUpdDbResult> UpdateAccessPointAsync(
-            int accessPointId, 
-            IDbTransaction transaction, 
-            String description = null, 
-            bool? isActive = null, 
+            int id,
+            IDbTransaction transaction,
+            String description = null,
+            bool? isActive = null,
             AccessLevel? accessLevel = null,
             AccessPointDirectionType? direction = null)
         {
-            var serialNumber = await this.GetAccessPointSerialNumberAsync(accessPointId, transaction);
+            var serialNumber = await this.GetAccessPointSerialNumberAsync(id, transaction);
             if (String.IsNullOrEmpty(serialNumber))
             {
                 return InsertOrUpdDbResult.NotFound;
@@ -259,6 +260,273 @@
             return InsertOrUpdDbResult.Create(dynamicParams.Identity(), inserted, inserted == false);
         }
 
+        public async Task<InsertOrUpdDbResult> InsertOrUpdateUnknownAccessPointAsync(String serialNumber, IDbTransaction transaction)
+        {
+            var param = new DynamicParameters();
+            param.Add("serial_number", value: serialNumber);
+            param.AddIdentity();
+
+            var inserted = await transaction.ExecuteStoreProcedureAsync<bool>("access_control.usp_insert_or_update_unknown_access_point", param);
+
+            return InsertOrUpdDbResult.Create(param.Identity(), inserted, inserted == false);
+        }
+
+        public async Task<InsertOrUpdDbResult> DeleteAccessPointAsync(String serialNumber, IDbTransaction transaction)
+        {
+            var param = new DynamicParameters();
+            param.Add("serial_number", serialNumber);
+            param.AddIdentity();
+
+            var updated = await transaction.ExecuteStoreProcedureAsync<bool>("access_control.usp_delete_access_point", param);
+
+            return InsertOrUpdDbResult.Create(param.Identity(), false, updated);
+        }
+
+        public async Task DeleteUnknownAccessPointAsync(String serialNumber, IDbTransaction transaction)
+        {
+            var param = new DynamicParameters();
+            param.Add("serial_number", value: serialNumber);
+
+            await transaction.ExecuteStoreProcedureAsync("access_control.usp_delete_unknown_access_point", param);
+        }
+
+        public async Task<InsertOrUpdDbResult> InsertOrUpdateUnknownTagAsync(String number, IDbTransaction transaction)
+        {
+            var param = new DynamicParameters();
+            param.Add("number", value: number);
+            param.AddIdentity();
+
+            var inserted = await transaction.ExecuteStoreProcedureAsync<bool>("access_control.usp_insert_or_update_unknown_tag", param);
+
+            return InsertOrUpdDbResult.Create(param.Identity(), inserted, inserted == false);
+        }
+
+        public async Task DeleteUnknownTagAsync(String number, IDbTransaction transaction)
+        {
+            var param = new DynamicParameters();
+            param.Add("number", number);
+
+            await transaction.ExecuteStoreProcedureAsync("access_control.usp_delete_unknown_tag", param);
+        }
+
+        public async Task InsertEventAsync(String accessPointSerialNumber, String tagNumber, IDbTransaction transaction)
+        {
+            await transaction.ExecuteStoreProcedureAsync(
+                "stat.usp_insert_event",
+                new { @access_point_serial_number = accessPointSerialNumber, @tag_number = tagNumber }
+            );
+        }
+
+
+        public async Task<IReadOnlyCollection<AccessPointResponseModel>> GetAllActiveAccessPointsAsync()
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var dbResult = await connection.QueryAsync<AccessPointResponseModel>(@"
+                    select 
+                        x.Id, 
+                        x.SerialNumber, 
+                        x.Description, 
+                        x.LevelId as AccessLevel, 
+                        x.DirectionId as Direction, 
+                        x.CreateDate, 
+                        x.ModificationDate, 
+                        x.IsActive
+                    from access_control.f_get_active_access_points() as x");
+
+                return dbResult.ToList();
+            }
+        }
+
+        public async Task<IReadOnlyCollection<AccessPointResponseModel>> GetAllInActiveAccessPointsAsync()
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var dbResult = await connection.QueryAsync<AccessPointResponseModel>(@"
+                    select 
+                        x.Id, 
+                        x.SerialNumber, 
+                        x.Description, 
+                        x.LevelId as AccessLevel, 
+                        x.DirectionId as Direction, 
+                        x.CreateDate, 
+                        x.ModificationDate, 
+                        x.IsActive
+                    from access_control.f_get_in_active_access_points() as x");
+
+                return dbResult.ToList();
+            }
+        }
+
+        public async Task<IReadOnlyCollection<UnKnownAccessPointResponseModel>> GetAllUnKnownActiveAccessPointsAsync()
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var dbResult = await connection.QueryAsync<UnKnownAccessPointResponseModel>("select x.Id, x.SerialNumber, x.AccessDate from access_control.f_get_unknown_active_points() as x");
+
+                return dbResult.ToList();
+            }
+        }
+
+        public async Task<IReadOnlyCollection<TagResponseModel>> GetAllActiveTagsAsync()
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var dbResult = await connection.QueryAsync<TagResponseModel>(@"
+                    select
+                        x.Id,
+                        x.IsActive,
+                        x.LevelId as AccessLevel,
+                        x.CreateDate,
+                        x.ModificationDate,
+                        x.Number,
+                        x.UserName
+                    from access_control.f_get_active_tags() as x
+                ");
+
+                return dbResult.ToList();
+            }
+        }
+
+        public async Task<IReadOnlyCollection<TagResponseModel>> GetAllInActiveTagsAsync()
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var dbResult = await connection.QueryAsync<TagResponseModel>(@"
+                    select
+                        x.Id,
+                        x.IsActive,
+                        x.LevelId as AccessLevel,
+                        x.CreateDate,
+                        x.ModificationDate,
+                        x.Number,
+                        x.UserName
+                    from access_control.f_get_not_active_tags() as x
+                ");
+
+                return dbResult.ToList();
+            }
+        }
+
+        public async Task<IReadOnlyCollection<UserResponseModel>> GetAllTagsUsersAsync()
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var dbResult = await connection.QueryAsync<UserResponseModel>("select x.Id, x.[Name] as [UserName] from access_control.f_get_users() as x");
+
+                return dbResult.ToList();
+            }
+        }
+
+        public async Task<IReadOnlyCollection<UnKnownTagResponseModel>> GetAllUnKnownActiveTagsAsync()
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var dbResult = await connection.QueryAsync<UnKnownTagResponseModel>("select x.Id, x.AccessDate, x.Number from access_control.f_get_unknown_active_tags() as x");
+                return dbResult.ToList();
+            }
+        }
+
+        public async Task<TimeSpan?> GetUsersAvgEntranceTimeAsync()
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var minutes = await connection.ExecuteScalarAsync<int?>("select x.avg_time from stat.f_get_avg_entrance_time_in_minutes() as x");
+                return minutes == null ? (TimeSpan?)null : TimeSpan.FromMinutes(minutes.Value);
+            }
+        }
+
+        public async Task<TimeSpan?> GetUsersAvgExitTimeAsync()
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var minutes = await connection.ExecuteScalarAsync<int?>("select x.avg_time from stat.f_get_avg_exit_time_in_minutes() as x");
+                return minutes == null ? (TimeSpan?)null : TimeSpan.FromMinutes(minutes.Value);
+            }
+        }
+
+        public async Task<TimeSpan?> GetUsersAvgWorkHourNormAsync()
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var minutes = await connection.ExecuteScalarAsync<int?>("select x.avg_time from stat.f_get_avg_work_hour_norm_in_minutes() as x");
+                return minutes == null ? (TimeSpan?)null : TimeSpan.FromMinutes(minutes.Value);
+            }
+        }
+
+        public async Task<IReadOnlyCollection<UserStatResponseModel>> GetUsersStatAsync()
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var dbResult = await connection.QueryAsync<(int id, String userName, int avgEntranceTimeInMinutes, int avgExitTimeInMinutes, int avgWorkHourNormInMinutes)>(
+                    "select x.Id, x.UserName, x.AvgEntranceTimeInMinutes, x.AvgExitTimeInMinutes, x.AvgWorkHourNormInMinutes from stat.f_get_users() as x"
+                );
+
+                return dbResult.Select(x => new UserStatResponseModel
+                {
+                    Id = x.id,
+                    UserName = x.userName,
+                    AvgEntranceTime = TimeSpan.FromMinutes(x.avgEntranceTimeInMinutes),
+                    AvgExitTime = TimeSpan.FromMinutes(x.avgExitTimeInMinutes),
+                    AvgWorkHourNorm = TimeSpan.FromMinutes(x.avgWorkHourNormInMinutes)
+                }).ToList();
+            }
+        }
+
+        public async Task<IReadOnlyCollection<DateAndTimeResponseModel>> GetUserWorkHourNormForRangeAsync(int userId, DateTime? startDate, DateTime? endDate)
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var dbResult = await connection.QueryAsync<(int normInMinutes, DateTime day)>(
+                    "select x.norm as [normInMinutes], x.[day] as [day] from stat.f_get_work_hour_norm_in_minutes(@user_id, @start_date, @end_date) as x",
+                    param: new { @user_id = userId, start_date = startDate, end_date = endDate }
+                );
+
+                return dbResult.Select(x => new DateAndTimeResponseModel { Time = TimeSpan.FromMinutes(x.normInMinutes), Day = x.day }).ToList();
+            }
+        }
+
+        public async Task<IReadOnlyCollection<DateAndTimeResponseModel>> GetUserEntranceTimeForRangeAsync(int userId, DateTime? startDate, DateTime? endDate)
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var dbResult = await connection.QueryAsync<DateTime>("select x.entrance_time from stat.f_get_entrance_time_for_user(@user_id, @start_date, @end_date) as x", param: new { @user_id = userId, @start_date = startDate, @end_date = endDate });
+                return dbResult.Select(x => new DateAndTimeResponseModel
+                {
+                    Day = x.Date,
+                    Time = x.TimeOfDay
+                }).ToList();
+            }
+        }
+
+        public async Task<IReadOnlyCollection<DateAndTimeResponseModel>> GetUserExitTimeForRangeAsync(int userId, DateTime? startDate, DateTime? endDate)
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var dbResult = await connection.QueryAsync<DateTime>("select x.entrance_time from stat.f_get_exit_time_for_user(@user_id, @start_date, @end_date) as x", param: new { @user_id = userId, @start_date = startDate, @end_date = endDate });
+                return dbResult.Select(x => new DateAndTimeResponseModel
+                {
+                    Day = x.Date,
+                    Time = x.TimeOfDay
+                }).ToList();
+            }
+        }
+
+        public async Task<String> GetAccessPointSerialNumberAsync(int accessPointId, IDbTransaction transaction)
+        {
+            return await transaction.ExecuteScalarAsync<String>("select x.SerialNumber from access_control.AccessPoints as x where x.Id=@access_point_id", param: new { @access_point_id = accessPointId });
+        }
+
+        public async Task<bool?> CheckAccessAsync(String accessPointSerialNumber, String tagNumber, IDbTransaction transaction)
+        {
+            var hasAccess = await transaction.ExecuteScalarAsync<bool?>(
+                "select access_control.f_check_access(@access_point_serial_number, @tag_number)",
+                new { @access_point_serial_number = accessPointSerialNumber, @tag_number = tagNumber }
+            );
+            return hasAccess;
+        }
+
+
         private async Task<InsertOrUpdDbResult> InsertOrUpdateTagAsync(
             String number,
             IDbTransaction transaction,
@@ -282,12 +550,6 @@
         {
             return await transaction.ExecuteScalarAsync<String>("select x.Number from access_control.Tags as x where x.Id=@tag_id", param: new { @tag_id = tagId });
         }
-
-        private async Task<String> GetAccessPointSerialNumberAsync(int accessPointId, IDbTransaction transaction)
-        {
-            return await transaction.ExecuteScalarAsync<String>("select x.SerialNumber from access_control.AccessPoints as x where x.Id=@access_point_id", param: new { @access_point_id = accessPointId });
-        }
-
 
         private SqlMapper.ICustomQueryParameter AsIntList(IReadOnlyCollection<int> values)
         {

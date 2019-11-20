@@ -37,7 +37,15 @@
         {
             using (var connection = CreateConnection())
             {
-                return connection.ExecuteScalar<int>("select count(*) from access_control.AccessPoints");
+                return await connection.ExecuteScalarAsync<int>("select count(*) from access_control.AccessPoints where IsDeleted=0");
+            }
+        }
+
+        public static async Task<int> GetUnKnownAccessPointCountsAsync()
+        {
+            using (var connection = CreateConnection())
+            {
+                return await connection.ExecuteScalarAsync<int>("select count(*) from access_control.UnKnownAccessPoints where IsDeleted=0");
             }
         }
 
@@ -54,6 +62,22 @@
             using (var connection = CreateConnection())
             {
                 return await connection.ExecuteScalarAsync<int>("select x.Id from access_control.AccessPoints as x where x.SerialNumber=@serial_number", param: new { serial_number = serialNumber });
+            }
+        }
+
+        public static async Task<int> GetTagUserIdByUserNameAsync(String username)
+        {
+            using (var connection = CreateConnection())
+            {
+                return await connection.ExecuteScalarAsync<int>("select top 1 x.Id from access_control.Users as x where x.[Name]=@username", param: new { username = username });
+            }
+        }
+
+        public static async Task<int> GetUnknownTagCntAsync()
+        {
+            using (var connection = CreateConnection())
+            {
+                return await connection.ExecuteScalarAsync<int>("select count(*) from access_control.UnknownTags as x where x.IsDeleted=0");
             }
         }
 

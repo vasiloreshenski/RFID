@@ -1,0 +1,52 @@
+<div class="grid">
+    <div>
+        <div class='field-wrapper'>
+            <div class="label-value">
+                <label for="serialNumber">Serial number: </label>
+                <span name="serialNumber">{{accessPoint.serialNumber}}</span>
+            </div>
+            <div class="label-value">
+                <label for="accessLevel">Access level: </label>
+                <select name="accessLevel" [disabled]="accessPoint.canEdit==false" #accessLevel>
+                    <option *ngFor="let accessLevel of accessLevels"
+                        [selected]="accessPoint.getAccessLevelText() == accessLevel">
+                        {{accessLevel}}</option>
+                </select>
+            </div>
+            <div class="label-value">
+                <label for="direction">Direction: </label>
+                <select name="direction" [disabled]="accessPoint.canEdit==false" #direction>
+                    <option *ngFor="let direction of directions"
+                        [selected]="accessPoint.getDirectionText() == direction">
+                        {{direction}}</option>
+                </select>
+            </div>
+            <div class="label-value">
+                <label for="createDate">Create date: </label>
+                <span name="createDate">{{accessPoint.getCreateDateDisplayText()}}</span>
+            </div>
+            <div class="label-value">
+                <label for="modificationDate">Modification date: </label>
+                <span name="modificationDate">{{accessPoint.getModificationDateDisplayText()}}</span>
+            </div>
+        </div>
+        <button *ngIf="accessPoint.canEdit==false" class='button edit' (click)="enableEdit()">Edit</button>
+        <button *ngIf="accessPoint.canEdit" (click)="cancelEdit(accessLevel, direction, description)">Cancel</button>
+        <button class='button save'
+            (click)="registerOrUpdate(description.value, accessLevel.options[accessLevel.selectedIndex].text, direction.options[direction.selectedIndex].text)"
+            [disabled]="accessPoint.canEdit == false">Save</button>
+        <button (click)="updateActivateStatus()"
+            [disabled]="accessPoint.canEdit">{{accessPoint.isActive ? "De-Activate" : "Activate"}}</button>
+        <button (click)="delete()"
+            [disabled]="accessPoint.isRegistered() && accessPoint.canEdit">Delete</button>
+    </div>
+    <div>
+        <div class='field-wrapper'>
+            <div class="label-value">
+                <p>Description: </p>
+                <textarea [disabled]="accessPoint.canEdit==false" class="wide" name="description"
+                    #description>{{accessPoint.description}}</textarea>
+            </div>
+        </div>
+    </div>
+</div>

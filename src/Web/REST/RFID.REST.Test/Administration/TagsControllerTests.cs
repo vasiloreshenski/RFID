@@ -773,5 +773,82 @@
         }
 
         #endregion Access Level
+
+        #region Update
+
+        [Fact]
+        public async Task Update_When_User_Changed()
+        {
+            var assertDatabase = await RfidDatabaseAssert.CreateAsync();
+
+            var userRM = Examples.Administrator();
+            var tagRM = Examples.Tag();
+            var tagId = 0;
+            var tagNewUsername = "new username";
+            var tagUpdateRM = (UpdateTagRequestModel)null;
+
+            await RfidHttpClient.RegisterUserAsync(userRM);
+
+            using (var httpResponse = await RfidHttpClient.GenerateAuthTokenAsync(userRM))
+            {
+                var authToken = await AuthTokenHelper.FromHttpResponseMessageAsync(httpResponse);
+                var token = await authToken.GetTokenAsync();
+
+                using (var tagHttpResponse = await RfidHttpClient.RegisterTagAsync(tagRM, token))
+                {
+                    RfidAssert.AssertHttpResponse(tagHttpResponse, System.Net.HttpStatusCode.OK);
+                }
+
+                tagId = await RfidDatabase.GetTagIdByNumberAsync(tagRM.Number);
+
+                tagUpdateRM = Examples.TagUpdate(tagId, tagNewUsername);
+                using (var tagHttpResponse = await RfidHttpClient.UpdateTagAsync(tagUpdateRM, token))
+                {
+                    RfidAssert.AssertHttpResponse(tagHttpResponse, System.Net.HttpStatusCode.OK);
+                }
+            }
+
+            await assertDatabase.AssertCntAsync(userRM, tagRM, tagUpdateRM);
+            var expectedUserId = await RfidDatabase.GetTagUserIdByUserNameAsync(tagNewUsername);
+            await assertDatabase.AssertStateAsync("access_control.Tags", tagId, new { UserId = expectedUserId });
+        }
+
+        [Fact]
+        public async Task Update_When_User_Is_The_Same()
+        {
+            var assertDatabase = await RfidDatabaseAssert.CreateAsync();
+
+            var userRM = Examples.Administrator();
+            var tagRM = Examples.Tag();
+            var tagId = 0;
+            var tagUpdateRM = (UpdateTagRequestModel)null;
+
+            await RfidHttpClient.RegisterUserAsync(userRM);
+
+            using (var httpResponse = await RfidHttpClient.GenerateAuthTokenAsync(userRM))
+            {
+                var authToken = await AuthTokenHelper.FromHttpResponseMessageAsync(httpResponse);
+                var token = await authToken.GetTokenAsync();
+
+                using (var tagHttpResponse = await RfidHttpClient.RegisterTagAsync(tagRM, token))
+                {
+                    RfidAssert.AssertHttpResponse(tagHttpResponse, System.Net.HttpStatusCode.OK);
+                }
+
+                tagId = await RfidDatabase.GetTagIdByNumberAsync(tagRM.Number);
+
+                tagUpdateRM = Examples.TagUpdate(tagId, tagRM.UserName);
+                using (var tagHttpResponse = await RfidHttpClient.UpdateTagAsync(tagUpdateRM, token))
+                {
+                    RfidAssert.AssertHttpResponse(tagHttpResponse, System.Net.HttpStatusCode.OK);
+                }
+            }
+
+            await assertDatabase.AssertCntAsync(userRM, tagRM, tagUpdateRM);
+            var expectedUserId = await RfidDatabase.GetTagUserIdByUserNameAsync(tagRM.UserName);
+            await assertDatabase.AssertStateAsync("access_control.Tags", tagId, new { UserId = expectedUserId });
+        }
+
+        #endregion Update
     }
 }

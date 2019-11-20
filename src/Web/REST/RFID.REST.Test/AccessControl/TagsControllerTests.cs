@@ -138,7 +138,7 @@
                 }
             }
 
-            await assertDatabase.AssertCntAsync(userRM, tagRM, accessPoint);
+            await assertDatabase.AssertCntAsync(userRM, tagRM, accessPoint, Examples.UnKnownTag("unknown"));
         }
 
         [Fact]
@@ -163,7 +163,7 @@
                 }
             }
 
-            await assertDatabase.AssertCntAsync(userRM, tagRM, accessPoint);
+            await assertDatabase.AssertCntAsync(userRM, tagRM, accessPoint, Examples.UnKnownAccessPoint("unknown"));
         }
 
         [Theory]

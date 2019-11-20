@@ -53,8 +53,20 @@
         }
 
         public static void AddIdentity(this DynamicParameters dparams) => dparams.Add("identity", dbType: DbType.Int32, direction: ParameterDirection.Output);
-        
-        public static int Identity(this DynamicParameters dparams) => dparams.Get<int>("identity");
+
+        public static int Identity(this DynamicParameters dparams)
+        {
+            var identity = dparams.Get<int?>("identity");
+
+            if (identity == null)
+            {
+                return default;
+            }
+            else
+            {
+                return identity.Value;
+            }
+        }
 
         public static T Return<T>(this DynamicParameters dparams)
         {

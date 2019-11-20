@@ -33,9 +33,16 @@
             using (var connection = await this.sqlConnectionFactory.CreateConnectionAsync(true))
             using (var transaction = connection.BeginTransaction())
             {
+                var userId = (int?)null;
+                if (String.IsNullOrEmpty(model.UserName) == false)
+                {
+                    var userDbResult = await this.database.InsertAccessPointUserIfNotExistsAsync(model.UserName, transaction);
+                    userId = userDbResult.Id;
+                }
+
                 var dbResult = await this.database.UpdateTagAsync(
-                    tagId: model.TagId,
-                    userId: model.UserId,
+                    tagId: model.Id,
+                    userId: userId,
                     isActive: model.IsActive,
                     isDeleted: model.IsDeleted,
                     accessLevel: model.AccessLevel,

@@ -15,9 +15,9 @@
     {
         public static readonly String EndPointUrl = "http://192.168.0.105:8080";
 
-        public static Task<HttpResponseMessage> GetAsync(String subpath)
+        public static Task<HttpResponseMessage> GetAsync(String subpath, String authToken)
         {
-            return ExecuteAsync<Object>(subpath, null, null, (client, path, _) => client.GetAsync(path)); 
+            return ExecuteAsync<Object>(subpath, null, authToken, (client, path, _) => client.GetAsync(path)); 
         }
 
         public static Task<HttpResponseMessage> PostAsync<T>(String subpath, T data)
@@ -50,9 +50,7 @@
         public static async Task<HttpResponseMessage> GenerateAuthTokenAsync(String email, String password)
         {
             var result = await PostAsync("/auth/api/token/generate", new TokenGenerationRequestModel { Email = email, Password = password });
-
-            await Task.Delay(1000);
-
+            
             return result;
 
         }
@@ -88,6 +86,11 @@
             return await PatchAsync($"/administration/api/tags/delete", new { Id = tagId }, authToken);
         }
 
+        public static async Task<HttpResponseMessage> UpdateTagAsync(UpdateTagRequestModel model, String authToken)
+        {
+            return await PatchAsync($"/administration/api/tags/update", model, authToken);
+        }
+
         public static async Task<HttpResponseMessage> ChangeTagAccessLevelAsync(ChangeTagAccessLevelRequestModel requestModel, String authToken)
         {
             return await PatchAsync($"/administration/api/tags/accesslevel", requestModel, authToken);
@@ -121,7 +124,32 @@
 
         public static Task<HttpResponseMessage> CheckAccessAsync(String tagNumber, String accessPontSerialNumber)
         {
-            return GetAsync($"/accesscontrol/api/tags/checkaccess?TagNumber={tagNumber}&AccessPointSerialNumber={accessPontSerialNumber}");
+            return GetAsync($"/accesscontrol/api/tags/checkaccess?TagNumber={tagNumber}&AccessPointSerialNumber={accessPontSerialNumber}", null);
+        }
+
+        public static Task<HttpResponseMessage> UpdateAccessPointAsync(UpdateAccessPointRequestModel requestModel, String authToken)
+        {
+            return PatchAsync($"/administration/api/accessPoint/update", requestModel, authToken);
+        }
+
+        public static async Task<HttpResponseMessage> DeleteAccessPointAsync(String serialNumber, String authToken)
+        {
+            var id = await RfidDatabase.GetAccessPointIdBySerialNumberAsync(serialNumber);
+
+            return await PatchAsync($"/administration/api/accesspoint/delete", new { Id = id }, authToken);
+        }
+
+        public static async Task<IReadOnlyCollection<AccessPointResponseModel>> GetAllActiveAccessPointsAsync(String authToken)
+        {
+            using (var response = await GetAsync("/administration/api/accesspoint/active", authToken))
+            {
+                using (var content = response.Content)
+                {
+                    var str = await content.ReadAsStringAsync();
+
+                    return JsonConvert.DeserializeObject<List<AccessPointResponseModel>>(str);
+                }
+            }
         }
 
         private static async Task<HttpResponseMessage> ExecuteAsync<T>(String subpath, T data, String authToken, Func<HttpClient, String, HttpContent, Task<HttpResponseMessage>> action)

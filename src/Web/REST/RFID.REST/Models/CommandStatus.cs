@@ -11,9 +11,11 @@
         Created = 1,
         Updated = 2,
         Deleted = 3,
+        Ok = 4,
 
         Dublicate = 100,
         NotFound = 101,
-        Expired = 102
+        Expired = 102,
+        UnAuthorized = 103
     }
 }

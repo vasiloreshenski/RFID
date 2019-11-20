@@ -21,10 +21,12 @@
     public class AccessPointController : ControllerBase
     {
         private readonly CommandFactory commandFactory;
+        private readonly Database.Database database;
 
-        public AccessPointController(CommandFactory commandFactory)
+        public AccessPointController(CommandFactory commandFactory, Database.Database database)
         {
             this.commandFactory = commandFactory;
+            this.database = database;
         }
 
         /// <summary>
@@ -63,7 +65,7 @@
         public async Task<IActionResult> ActivateAsync(Identity identity)
         {
             var command = this.commandFactory.CreateUpdateAccessPointCommand();
-            var commandResult = await command.UpdateAsync(new UpdateAccessPointRequestModel { AccessPointId = identity.Id, IsActive = true });
+            var commandResult = await command.UpdateAsync(new UpdateAccessPointRequestModel { Id = identity.Id, IsActive = true });
             if (commandResult.Success)
             {
                 return this.Ok();
@@ -86,7 +88,7 @@
         public async Task<IActionResult> DeActivateAsync(Identity identity)
         {
             var command = this.commandFactory.CreateUpdateAccessPointCommand();
-            var commandResult = await command.UpdateAsync(new UpdateAccessPointRequestModel { AccessPointId = identity.Id, IsActive = false });
+            var commandResult = await command.UpdateAsync(new UpdateAccessPointRequestModel { Id = identity.Id, IsActive = false });
             if (commandResult.Success)
             {
                 return this.Ok();
@@ -108,7 +110,7 @@
         public async Task<IActionResult> ChangeAccessLevelAsync(ChangeAccessPointAccessLevelRequestModel requestModel)
         {
             var command = this.commandFactory.CreateUpdateAccessPointCommand();
-            var commandResult = await command.UpdateAsync(new UpdateAccessPointRequestModel { AccessPointId = requestModel.AccessPointId, AccessLevel = requestModel.AccessLevel });
+            var commandResult = await command.UpdateAsync(new UpdateAccessPointRequestModel { Id = requestModel.AccessPointId, AccessLevel = requestModel.AccessLevel });
             if (commandResult.Success)
             {
                 return this.Ok();
@@ -117,6 +119,55 @@
             {
                 return this.NotFound();
             }
+        }
+
+        [HttpPatch("update")]
+        public async Task<IActionResult> UpdateAsync(UpdateAccessPointRequestModel requestModel)
+        {
+            var command = this.commandFactory.CreateUpdateAccessPointCommand();
+            var commandResult = await command.UpdateAsync(requestModel);
+            if (commandResult.Success)
+            {
+                return this.Ok();
+            }
+            else
+            {
+                return this.NotFound();
+            }
+        }
+
+        [HttpPatch("delete")]
+        public async Task<IActionResult> DeleteAsync(Identity identity)
+        {
+            var command = this.commandFactory.CreateDeleteAccessPointCommand();
+            var commandResult = await command.DeleteAsync(identity);
+
+            if (commandResult.Success)
+            {
+                return this.Ok();
+            }
+            else
+            {
+                return this.NotFound();
+            }
+        }
+
+        [HttpGet("active")]
+        public async Task<IReadOnlyCollection<AccessPointResponseModel>> GetAllActiveAsync()
+        {
+            return await this.database.GetAllActiveAccessPointsAsync();
+        }
+
+        [HttpGet("inactive")]
+        public async Task<IReadOnlyCollection<AccessPointResponseModel>> GetAllInActiveAsync()
+        {
+            return await this.database.GetAllInActiveAccessPointsAsync();
+        }
+
+        [HttpGet("unknown")]
+        public async Task<IReadOnlyCollection<UnKnownAccessPointResponseModel>> GetAllUnKnownAsync()
+        {
+            return await this.database.GetAllUnKnownActiveAccessPointsAsync();
         }
     }
 }

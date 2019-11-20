@@ -43,6 +43,11 @@
                         direction: model.Direction
                     );
 
+                    if (dbResult.IsInserted)
+                    {
+                        await this.database.DeleteUnknownAccessPointAsync(model.SerialNumber, transaction);
+                    }
+
                     transaction.Commit();
 
                     return CommandResult.FromDbResult(dbResult);

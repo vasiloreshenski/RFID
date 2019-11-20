@@ -40,10 +40,16 @@
             {
                 AccessLevel = (AccessLevel)accessLevel,
                 Number = number,
-                User = new RegisterTagUserRequestModel
-                {
-                    Name = userName
-                }
+                UserName = userName
+            };
+        }
+
+        public static UpdateTagRequestModel TagUpdate(int id, String username)
+        {
+            return new UpdateTagRequestModel
+            {
+                Id = id,
+                UserName = username
             };
         }
 
@@ -69,6 +75,16 @@
                 SerialNumber = serialNumber,
                 Direction = AccessPointDirectionType.Entrance
             };
+        }
+
+        public static UnKknownAccessPointMock UnKnownAccessPoint(String serialNumber)
+        {
+            return new UnKknownAccessPointMock { SerialNumber = serialNumber };
+        }
+
+        public static UnKnownTagMock UnKnownTag(String number)
+        {
+            return new UnKnownTagMock { Number = number };
         }
     }
 }

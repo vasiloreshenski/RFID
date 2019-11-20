@@ -20,10 +20,12 @@
     public class TagsController : ControllerBase
     {
         private readonly Database database;
+        private readonly Commands.CommandFactory commandFactory;
 
-        public TagsController(Database database)
+        public TagsController(Database database, Commands.CommandFactory commandFactory)
         {
             this.database = database;
+            this.commandFactory = commandFactory;
         }
 
         /// <summary>
@@ -34,23 +36,19 @@
         [HttpGet("checkAccess")]
         public async Task<IActionResult> CheckAccessAsync([FromQuery]CheckTagAccessRequestModel model)
         {
-            var tagAccessLevel = await this.database.GetAccessLevelForTagAsync(model.TagNumber);
-            var accessPointLevel = await this.database.GetAccessLevelForAccessPointAsync(model.AccessPointSerialNumber);
-            if (tagAccessLevel == null || accessPointLevel == null)
+            var command = this.commandFactory.CreateCheckAccessCommand();
+            var commandResult = await command.CheckAccessAsync(model);
+            if (commandResult.Success)
             {
-                return this.NotFound();
+                return this.Ok();
+            }
+            else if (commandResult.IsUnAuthorized)
+            {
+                return this.Unauthorized();
             }
             else
             {
-                var hasAccess = tagAccessLevel >= accessPointLevel;
-                if (hasAccess)
-                {
-                    return this.Ok();
-                }
-                else
-                {
-                    return this.Unauthorized();
-                }
+                return this.NotFound();
             }
         }
     }

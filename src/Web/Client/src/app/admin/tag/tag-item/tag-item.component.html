@@ -1,0 +1,34 @@
+<div>
+    <div class="field-wrapper">
+        <div class="label-value">
+            <label for="number">Number: </label>
+            <span name="number">{{tag.number}}</span>
+        </div>
+        <div class="label-value">
+            <label for="userName">UserName: </label>
+            <input list="users" [value]="tag.userName" [disabled]="tag.editMode==false" #userNameInput>
+            <datalist id="users">
+                <option *ngFor="let user of users" [selected]="user.userName==tag.userName">{{user.userName}}</option>
+            </datalist>
+        </div>
+        <div class="label-value">
+            <label for="accessLevel">Access level: </label>
+            <select name="accessLevel" [disabled]="tag.editMode==false" #accessLevelSelect>
+                <option *ngFor="let al of accessLevels" [selected]="tag.getAccessLevelDisplayText()==al">{{al}}</option>
+            </select>
+        </div>
+        <div class="label-value">
+            <label for="createDate">Create date: </label>
+            <span name="createDate">{{tag.getCreateDateDisplayText()}}</span>
+        </div>
+        <div class="label-value">
+            <label for="modificationDate">Modification date: </label>
+            <span name="modificationDate">{{tag.getModificationDateDisplayText()}}</span>
+        </div>
+    </div>
+    <button *ngIf="tag.editMode==false" [disabled]="tag.editMode==true" (click)="edit()">Edit</button>
+    <button *ngIf="tag.editMode" (click)="cancel(userNameInput, accessLevelSelect)">Cancel</button>
+    <button [disabled]="tag.editMode==false" (click)="save(userNameInput.value, accessLevelSelect.value)">Save</button>
+    <button [disabled]="tag.editMode" (click)="activateOrDeActivate()">{{tag.isActive ? "De-Activate" : "Activate"}}</button>
+    <button [disabled]="tag.editMode && tag.isRegistered()" (click)="delete()">Delete</button>
+</div>

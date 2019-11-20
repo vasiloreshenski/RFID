@@ -16,7 +16,7 @@
         /// Id of the tag to be updated
         /// </summary>
         [Required]
-        public int TagId { get; set; }
+        public int Id { get; set; }
 
         /// <summary>
         /// Is active status for the specified tag
@@ -31,7 +31,7 @@
         /// <summary>
         /// User id for the specified tag
         /// </summary>
-        public int? UserId { get; set; }
+        public String UserName { get; set; }
 
         /// <summary>
         /// Access level for the specified tag

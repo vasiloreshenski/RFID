@@ -16,6 +16,8 @@
             [typeof(RegisterTagRequestModel)] = RfidDatabase.GetAccessControlTagsCountAsync,
             [typeof(RegisterTagUserRequestModel)] = RfidDatabase.GetAccessControlUsersCountAsync,
             [typeof(RegisterAccessPointRequestModel)] = RfidDatabase.GetAccessPointsCountAsync,
+            [typeof(UnKknownAccessPointMock)] = RfidDatabase.GetUnKnownAccessPointCountsAsync,
+            [typeof(UnKnownTagMock)] = RfidDatabase.GetUnknownTagCntAsync
         };
 
         public static async Task<RfidDatabaseAssert> CreateAsync()
@@ -40,10 +42,13 @@
             var actual = await GetDatabaseCntsAsync();
 
             var flatten = new List<Object>(objs);
-            var uniqueAccessControlUsers = objs.OfType<RegisterTagRequestModel>().Select(x => x.User).GroupBy(x => x.Name).Select(x => x.First());
+            var uniqueAccessControlUsers = GetTagUsersRequestModels(objs);
             flatten.AddRange(uniqueAccessControlUsers);
 
-            var typeGroups = flatten.GroupBy(x => x.GetType()).ToDictionary(x => x.Key, x => x.ToList());
+            var typeGroups = flatten
+                .Where(x => IsUpdateType(x) == false)
+                .GroupBy(x => x.GetType())
+                .ToDictionary(x => x.Key, x => x.ToList());
 
             foreach (var (type, cnt) in this.cntMap)
             {
@@ -72,7 +77,7 @@
 
             var actualMap = await RfidDatabase.GetRecordStateByTableNameAsync(tableName, id);
             actualMap = actualMap.Where(x => expectedMap.Keys.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value);
-            
+
             Assert.True(expectedMap.OrderBy(x => x.Key).SequenceEqual(actualMap.OrderBy(x => x.Key)));
         }
 
@@ -89,6 +94,33 @@
             await Task.WhenAll(tasks.Select(x => x.task).ToList());
 
             return tasks.ToDictionary(x => x.type, x => x.task.Result);
+        }
+
+        private static IReadOnlyCollection<RegisterTagUserRequestModel> GetTagUsersRequestModels(IEnumerable<Object> objs)
+        {
+            var result = new List<RegisterTagUserRequestModel>();
+
+            foreach (var obj in objs)
+            {
+                if (obj is RegisterTagRequestModel rm)
+                {
+                    result.Add(new RegisterTagUserRequestModel { Name = rm.UserName });
+                }
+                else if (obj is UpdateTagRequestModel urm)
+                {
+                    result.Add(new RegisterTagUserRequestModel
+                    {
+                        Name = urm.UserName
+                    });
+                }
+            }
+
+            return result.GroupBy(x => x.Name).Select(x => x.First()).ToList();
+        }
+
+        private static bool IsUpdateType(Object obj)
+        {
+            return new[] { typeof(UpdateTagRequestModel) }.Contains(obj.GetType());
         }
     }
 }

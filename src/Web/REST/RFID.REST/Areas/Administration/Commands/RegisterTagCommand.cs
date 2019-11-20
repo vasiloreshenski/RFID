@@ -12,7 +12,7 @@
     /// Command for registering new tags
     /// </summary>
     public class RegisterTagCommand
-    {   
+    {
         private readonly SqlConnectionFactory sqlConnectionFactory;
         private readonly Database database;
 
@@ -32,8 +32,13 @@
             using (var connection = await this.sqlConnectionFactory.CreateConnectionAsync(true))
             using (var transaction = connection.BeginTransaction())
             {
-                var userDbResult = await this.database.InsertAccessPointUserAsync(model.User.Name, transaction);
+                var userDbResult = await this.database.InsertAccessPointUserIfNotExistsAsync(model.UserName, transaction);
                 var tagDbResult = await this.database.InsertTagIfNotExistsAsync(model.Number, userDbResult.Id, model.AccessLevel, transaction);
+
+                if (tagDbResult.IsInserted)
+                {
+                    await this.database.DeleteUnknownTagAsync(model.Number, transaction);
+                }
 
                 transaction.Commit();
 
