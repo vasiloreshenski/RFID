@@ -32,10 +32,10 @@
                 await RfidDockerHttpClient.RestMssqlAsync(webhost.Services.GetService<SqlConnectionFactory>());
 
                 await InsertAdministratorAsync(webhost.Services);
-                // await InsertAccessPoints(webhost.Services);
-                // await InsertUnknownAccessPointsAsync(webhost.Services);
-                // await InsertTagsAsync(webhost.Services);
-                // await GenerateEventsAsync(webhost.Services);
+                await InsertAccessPoints(webhost.Services);
+                await InsertUnknownAccessPointsAsync(webhost.Services);
+                await InsertTagsAsync(webhost.Services);
+                await GenerateEventsAsync(webhost.Services);
             }
         }
 

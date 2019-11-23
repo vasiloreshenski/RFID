@@ -21,7 +21,7 @@ namespace RFID.REST
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseSerilogLogging()
-                .UseKestrel(x => x.ConfigureEndpointDefaults(o => o.UseConnectionLogging()))
+                // .UseKestrel(x => x.ConfigureEndpointDefaults(o => o.UseConnectionLogging()))
                 .UseStartup<Startup>();
     }
 }

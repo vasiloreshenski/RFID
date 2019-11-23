@@ -1,3 +1,4 @@
+import { environment } from './../../environments/environment';
 import { StatUserOverview } from './../model/stat-user-overview';
 import { RegisterTagRequestModel } from './../model/register-tag-request-model';
 import { UnknownTag } from './../model/unknown-tag';
@@ -27,7 +28,7 @@ export class AuthTokenResponseModel {
 
 @Injectable()
 export class RfidHttpClient {
-    public API_URL = 'http://192.168.0.105:8080';
+    public API_URL = environment.apiUrl;
 
     constructor(private http: HttpClient, private datePipe: DatePipe) {
     }
