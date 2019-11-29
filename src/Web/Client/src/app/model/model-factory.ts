@@ -22,6 +22,7 @@ export class ModelFactory {
         obj.direction = json.direction;
         obj.id = json.id;
         obj.isActive = json.isActive;
+        obj.isDeleted = json.isDeleted;
         if (json.modificationDate) {
             obj.modificationDate = new Date(json.modificationDate);
         }
@@ -77,12 +78,13 @@ export class ModelFactory {
         obj.createDate = new Date(json.createDate);
         obj.id = json.id;
         obj.isActive = json.isActive;
+        obj.isDeleted = json.isDeleted;
         if (json.modificationDate) {
             obj.modificationDate = new Date(json.modificationDate);
         }
         obj.number = json.number;
         obj.userName = json.userName;
-        obj.editMode = false;
+        obj.canEdit = false;
         return obj;
     }
 
@@ -104,7 +106,7 @@ export class ModelFactory {
     public static unknownTagFromJson(json: any): UnknownTag {
         const obj = new UnknownTag();
         obj.id = json.id;
-        obj.accessDate = json.accessDate;
+        obj.accessDate = new Date(json.accessDate);
         obj.number = json.number;
         return obj;
     }
@@ -119,9 +121,12 @@ export class ModelFactory {
 
     public static statUserOverviewFromJson(json: any): StatUserOverview {
         const obj = new StatUserOverview();
-        obj.avgEntranceTime = json.avgEntranceTime;
-        obj.avgExitTime = json.avgExitTime;
-        obj.avgWorkHourNorm = json.avgWorkHourNorm;
+        obj.avgEntranceTime = new DateTime();
+        obj.avgEntranceTime.time = json.avgEntranceTime;
+        obj.avgExitTime = new DateTime();
+        obj.avgExitTime.time = json.avgExitTime;
+        obj.avgWorkHourNorm = new DateTime();
+        obj.avgWorkHourNorm.time = json.avgWorkHourNorm;
         return obj;
     }
 

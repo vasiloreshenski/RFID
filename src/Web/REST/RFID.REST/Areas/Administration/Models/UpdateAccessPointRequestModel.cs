@@ -15,6 +15,8 @@
         public String Description { get; set; }
 
         public bool? IsActive { get; set; }
+
+        public bool? IsDeleted { get; set; }
         
         public AccessLevel? AccessLevel { get; set; }
 

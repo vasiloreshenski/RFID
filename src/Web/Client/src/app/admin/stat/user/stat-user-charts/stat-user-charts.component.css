@@ -1,5 +1,15 @@
 .chart-container {
     width: 1000px;
     height: 600px;
-    margin: 20px;
+    margin-top: 50px;
 }
+
+.date-picker-container {
+    margin-top: 50px;
+}
+
+.date-picker {
+    margin-left: 10px;
+}
+
+.chart { fill: #e0e0e0 !important; }

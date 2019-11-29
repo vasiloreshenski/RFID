@@ -1,19 +1,7 @@
-nav a {
-    text-decoration: underline;
-    color: blue;
-    cursor: pointer;
-    direction: ltr;
+#app-content {
+    display: flex;
+    justify-content: center;
 }
-
-nav {
-    text-align: center;
-}
-
-nav ul {
-    display: inline-block;
-}
-
-nav ul li {
-    display: inline-block;
-    margin: 1.1em;
+hr {
+    margin-bottom: 60px;
 }

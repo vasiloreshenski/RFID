@@ -66,6 +66,15 @@ export class RfidHttpClient {
         return result$;
     }
 
+    public getInDeletedAccessPoints(): Observable<AccessPoint[]> {
+        const url = new URL('/administration/api/accesspoint/deleted', this.API_URL).href;
+        const result$ = this.http.get<AccessPoint[]>(url).pipe(
+            map(array => array.map(json => ModelFactory.accessPointFromJson(json)))
+        );
+
+        return result$;
+    }
+
     public getUnknownAccessPoints(): Observable<UnknownAccessPoint[]> {
         const url = new URL('/administration/api/accesspoint/unknown', this.API_URL).href;
         const result$ = this.http.get<UnknownAccessPoint[]>(url).pipe(
@@ -92,6 +101,14 @@ export class RfidHttpClient {
         return result$;
     }
 
+    public getDeletedTags(): Observable<Tag[]> {
+        const url = new URL('/administration/api/tags/deleted', this.API_URL).href;
+        const result$ = this.http.get<Tag[]>(url).pipe(
+            map(data => data.map(json => ModelFactory.tagFromJson(json)))
+        );
+        return result$;
+    }
+
     public getTagsUsers(): Observable<TagUser[]> {
         const url = new URL('/administration/api/tags/users', this.API_URL).href;
         const result$ = this.http.get<Tag[]>(url).pipe(
@@ -110,7 +127,9 @@ export class RfidHttpClient {
 
     public getStatUserOverview(): Observable<StatUserOverview> {
         const url = new URL('/stat/api/users/overview', this.API_URL).href;
-        const result$ = this.http.get<StatUserOverview>(url);
+        const result$ = this.http.get<StatUserOverview>(url).pipe(
+            map(data => ModelFactory.statUserOverviewFromJson(data))
+        );
         return result$;
     }
 
@@ -194,6 +213,11 @@ export class RfidHttpClient {
         return this.http.patch(url, { id: id }, { observe: 'response', headers: new HttpHeaders({ 'Content-Type': 'application/json' }) });
     }
 
+    public unDeleteAccessPoint(id: number): Observable<HttpResponse<Object>> {
+        const url = new URL('/administration/api/accesspoint/undelete', this.API_URL).href;
+        return this.http.patch(url, { id: id }, { observe: 'response', headers: new HttpHeaders({ 'Content-Type': 'application/json' }) });
+    }
+
     public registerTag(tag: RegisterTagRequestModel): Observable<HttpResponse<Object>> {
         const url = new URL('/administration/api/tags/register', this.API_URL).href;
         const result$ = this.http.post(url, tag, { observe: 'response', headers: new HttpHeaders({ 'Content-Type': 'application/json' }) });
@@ -220,6 +244,12 @@ export class RfidHttpClient {
 
     public deleteTag(id: number): Observable<HttpResponse<Object>> {
         const url = new URL('/administration/api/tags/delete', this.API_URL).href;
+        const result$ = this.http.patch(url, { id: id }, { observe: 'response', headers: new HttpHeaders({ 'Content-Type': 'application/json' }) });
+        return result$;
+    }
+
+    public unDeleteTag(id: number): Observable<HttpResponse<Object>> {
+        const url = new URL('/administration/api/tags/undelete', this.API_URL).href;
         const result$ = this.http.patch(url, { id: id }, { observe: 'response', headers: new HttpHeaders({ 'Content-Type': 'application/json' }) });
         return result$;
     }

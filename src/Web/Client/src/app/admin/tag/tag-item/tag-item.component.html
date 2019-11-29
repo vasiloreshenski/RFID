@@ -1,4 +1,46 @@
-<div>
+<mat-card class="wrapper">
+    <mat-card-subtitle>{{tag.number}}</mat-card-subtitle>
+    <mat-card-content>
+        <mat-form-field>
+            <input matInput required color="primary" list="users" [matAutocomplete]="auto" placeholder="User"
+                [formControl]="userControl">
+        </mat-form-field>
+        <mat-autocomplete #auto="matAutocomplete">
+            <mat-option *ngFor="let user of filteredUsers | async" [value]="user.userName">{{user.userName}}
+            </mat-option>
+        </mat-autocomplete>
+        <mat-divider [vertical]="true" color="primary" class="divider"></mat-divider>
+        <mat-form-field>
+            <mat-label for="accessLevel">Access level: </mat-label>
+            <mat-select [value]="tag.getAccessLevelDisplayText()" [formControl]="accessLevelControl">
+                <mat-option *ngFor="let al of accessLevels" [value]="al">{{al}}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <div class="label-value">
+            <label for="createDate">Create date: </label>
+            <span name="createDate">{{tag.getCreateDateDisplayText()}}</span>
+        </div>
+        <div class="label-value">
+            <label for="modificationDate">Modification date: </label>
+            <span name="modificationDate">{{tag.getModificationDateDisplayText()}}</span>
+        </div>
+    </mat-card-content>
+    <mat-card-actions class="flex h-right">
+        <button mat-stroked-button color="accent" *ngIf="tag.canEdit==false" [disabled]="tag.canEdit==true"
+            (click)="edit()">Edit</button>
+        <button mat-stroked-button color="accent" *ngIf="tag.canEdit" (click)="cancel()">Cancel</button>
+        <button mat-stroked-button color="accent" [disabled]="tag.canEdit==false" (click)="save()">Save</button>
+        <button mat-stroked-button color="accent" [disabled]="tag.canEdit || tag.isDeleted"
+            (click)="activateOrDeActivate()">{{tag.isActive ? "De-Activate" : "Activate"}}</button>
+        <button *ngIf="tag.isDeleted == false" mat-stroked-button color="accent"
+            [disabled]="tag.canEdit && tag.isRegistered()" (click)="delete()">Delete</button>
+        <button *ngIf="tag.isDeleted" mat-stroked-button color="accent" [disabled]="tag.canEdit && tag.isRegistered()"
+            (click)="unDelete()">Recover deleted</button>
+    </mat-card-actions>
+</mat-card>
+
+<!-- <div>
     <div class="field-wrapper">
         <div class="label-value">
             <label for="number">Number: </label>
@@ -31,4 +73,4 @@
     <button [disabled]="tag.editMode==false" (click)="save(userNameInput.value, accessLevelSelect.value)">Save</button>
     <button [disabled]="tag.editMode" (click)="activateOrDeActivate()">{{tag.isActive ? "De-Activate" : "Activate"}}</button>
     <button [disabled]="tag.editMode && tag.isRegistered()" (click)="delete()">Delete</button>
-</div>
+</div> -->

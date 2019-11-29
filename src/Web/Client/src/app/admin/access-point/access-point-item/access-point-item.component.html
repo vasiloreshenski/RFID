@@ -1,52 +1,56 @@
-<div class="grid">
-    <div>
-        <div class='field-wrapper'>
-            <div class="label-value">
-                <label for="serialNumber">Serial number: </label>
-                <span name="serialNumber">{{accessPoint.serialNumber}}</span>
+<mat-card class="wrapper">
+    <mat-card-subtitle>{{accessPoint.serialNumber}}</mat-card-subtitle>
+    <mat-card-content>
+        <div class="flex">
+            <div>
+                <p>
+                    <mat-form-field>
+                        <mat-label for="accessLevel">Access level: </mat-label>
+                        <mat-select [value]="accessPoint.getAccessLevelText()" [formControl]="accessLevelControl">
+                            <mat-option *ngFor="let accessLevel of accessLevels" [value]="accessLevel">{{accessLevel}}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </p>
+                <p>
+                    <mat-form-field>
+                        <mat-label for="direction">Direction: </mat-label>
+                        <mat-select [value]="accessPoint.getDirectionText()" [formControl]="directionControl">
+                            <mat-option *ngFor="let direction of directions" [value]="direction">{{direction}}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </p>
             </div>
-            <div class="label-value">
-                <label for="accessLevel">Access level: </label>
-                <select name="accessLevel" [disabled]="accessPoint.canEdit==false" #accessLevel>
-                    <option *ngFor="let accessLevel of accessLevels"
-                        [selected]="accessPoint.getAccessLevelText() == accessLevel">
-                        {{accessLevel}}</option>
-                </select>
-            </div>
-            <div class="label-value">
-                <label for="direction">Direction: </label>
-                <select name="direction" [disabled]="accessPoint.canEdit==false" #direction>
-                    <option *ngFor="let direction of directions"
-                        [selected]="accessPoint.getDirectionText() == direction">
-                        {{direction}}</option>
-                </select>
-            </div>
-            <div class="label-value">
-                <label for="createDate">Create date: </label>
-                <span name="createDate">{{accessPoint.getCreateDateDisplayText()}}</span>
-            </div>
-            <div class="label-value">
-                <label for="modificationDate">Modification date: </label>
-                <span name="modificationDate">{{accessPoint.getModificationDateDisplayText()}}</span>
-            </div>
+            <mat-divider [vertical]="true" color="primary" class="devider"></mat-divider>
+            <p class="w-fill">
+                <mat-form-field class="w-fill" hintLabel="Not empty">
+                    <textarea name="description" placeholder="Description" [formControl]="descriptionControl"
+                        minlength="1" rows="5" matInput required>{{accessPoint.description}}</textarea>
+                    <mat-error *ngIf="descriptionControl.invalid">Description can't be empty</mat-error>
+                </mat-form-field>
+            </p>
         </div>
-        <button *ngIf="accessPoint.canEdit==false" class='button edit' (click)="enableEdit()">Edit</button>
-        <button *ngIf="accessPoint.canEdit" (click)="cancelEdit(accessLevel, direction, description)">Cancel</button>
-        <button class='button save'
-            (click)="registerOrUpdate(description.value, accessLevel.options[accessLevel.selectedIndex].text, direction.options[direction.selectedIndex].text)"
+        <div class="label-value">
+            <label for="createDate">Create date: </label>
+            <span name="createDate">{{accessPoint.getCreateDateDisplayText()}}</span>
+        </div>
+        <div class="label-value">
+            <label for="modificationDate">Modification date: </label>
+            <span name="modificationDate">{{accessPoint.getModificationDateDisplayText()}}</span>
+        </div>
+    </mat-card-content>
+    <mat-card-actions class="flex h-right">
+        <button mat-stroked-button color="accent" *ngIf="accessPoint.canEdit==false" class='button edit'
+            (click)="enableEdit()">Edit</button>
+        <button mat-stroked-button color="accent" *ngIf="accessPoint.canEdit" (click)="cancelEdit()">Cancel</button>
+        <button mat-stroked-button color="accent" (click)="updateActivateStatus()"
+            [disabled]="accessPoint.canEdit || accessPoint.isDeleted">{{accessPoint.isActive ? "De-Activate" : "Activate"}}</button>
+        <button *ngIf="accessPoint.isDeleted==false" mat-stroked-button color="accent" (click)="delete()"
+            [disabled]="accessPoint.canEdit">Delete</button>
+        <button *ngIf="accessPoint.isDeleted" mat-stroked-button color="accent" (click)="unDelete()"
+            [disabled]="accessPoint.isRegistered() && accessPoint.canEdit">Recover deleted</button>
+        <button mat-stroked-button color="accent" class='button save' (click)="registerOrUpdate()"
             [disabled]="accessPoint.canEdit == false">Save</button>
-        <button (click)="updateActivateStatus()"
-            [disabled]="accessPoint.canEdit">{{accessPoint.isActive ? "De-Activate" : "Activate"}}</button>
-        <button (click)="delete()"
-            [disabled]="accessPoint.isRegistered() && accessPoint.canEdit">Delete</button>
-    </div>
-    <div>
-        <div class='field-wrapper'>
-            <div class="label-value">
-                <p>Description: </p>
-                <textarea [disabled]="accessPoint.canEdit==false" class="wide" name="description"
-                    #description>{{accessPoint.description}}</textarea>
-            </div>
-        </div>
-    </div>
-</div>
+    </mat-card-actions>
+</mat-card>

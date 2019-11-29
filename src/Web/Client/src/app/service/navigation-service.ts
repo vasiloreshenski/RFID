@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
+import { Injectable, EventEmitter } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
 
 @Injectable()
 export class NavigationService {
@@ -10,7 +10,14 @@ export class NavigationService {
     static AccessPointManagmentRoute = '/admin/accesspoint';
     static TagManagmentRoute = '/admin/tag';
 
+    public NavigatedEvent: EventEmitter<String> = new EventEmitter<String>();
+
     constructor(private router: Router) {
+        router.events.subscribe(e => {
+            if (e instanceof NavigationEnd) {
+                this.NavigatedEvent.emit(this.currentPath());
+            }
+        });
     }
 
     gotoLogin(): void {
@@ -39,5 +46,9 @@ export class NavigationService {
 
     refresh(): void {
         location.reload();
+    }
+
+    currentPath(): String {
+        return this.router.url;
     }
 }

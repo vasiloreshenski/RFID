@@ -23,6 +23,7 @@ void setup() {
   SPI.begin();
   rfid.PCD_Init();
   http.init();
+  indicate_init_led();
 }
 
 void loop() {
@@ -67,6 +68,11 @@ void green_light_led() {
   delay(1000);
   digitalWrite(GREEN_PIN, LOW);
 }
-void reset_led() {
-  
+
+void indicate_init_led() {
+  digitalWrite(GREEN_PIN, HIGH);
+  digitalWrite(RED_PIN, HIGH);
+  delay(1000);
+  digitalWrite(GREEN_PIN, LOW);
+  digitalWrite(RED_PIN, LOW);
 }

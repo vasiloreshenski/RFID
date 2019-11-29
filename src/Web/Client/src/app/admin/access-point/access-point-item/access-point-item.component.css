@@ -1,18 +1,16 @@
-.grid {
-    display: grid;
-    grid-template-columns: auto auto;
-}
-
-.field-wrapper > .label-value {
-    margin-top: 0.8em;
-    margin-left: 1.05em;
-}
-.wide {
-    width: 90%;
-    height: 90%;
-}
-
-textarea.wide {
+textarea {
     resize: none;
-    height: 100px;
+}
+
+.flex {
+    padding: 5px;
+}
+
+.wrapper {
+    margin: 15px;
+    min-width: 600px;
+}
+
+.devider {
+    width: 20px;
 }

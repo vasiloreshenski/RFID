@@ -10,6 +10,7 @@ export class AccessPoint {
     public createDate: Date;
     public modificationDate: Date;
     public isActive: boolean;
+    public isDeleted: boolean;
     public canEdit: boolean;
 
     static default(): AccessPoint {
@@ -18,6 +19,7 @@ export class AccessPoint {
         obj.direction = 1;
         obj.createDate = new Date(Date.now());
         obj.isActive = true;
+        obj.isDeleted = false;
         obj.canEdit = false;
 
         return obj;
@@ -44,6 +46,7 @@ export class AccessPoint {
         copy.direction = this.direction;
         copy.id = this.id;
         copy.isActive = this.isActive;
+        copy.isDeleted = this.isDeleted;
         copy.modificationDate = this.modificationDate;
         copy.serialNumber = this.serialNumber;
         return copy;

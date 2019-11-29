@@ -1,16 +1,15 @@
-<div *ngIf="tag.editMode == false">
-    <div class="field-wrapper">
-        <div class="label-value">
-            <label for="number">Number: </label>
-            <span name="number">{{unknownTag.number}}</span>
-        </div>
+<mat-card *ngIf="tag.canEdit == false" class="wrapper">
+    <mat-card-subtitle>{{unknownTag.number}}</mat-card-subtitle>
+    <mat-card-content>
         <div class="label-value">
             <label for="accessDate">Access date: </label>
             <span name="accessDate">{{unknownTag.getAccessDateDisplayText()}}</span>
         </div>
-    </div>
-    <button (click)="activate()">Activate</button>
-</div>
-<div *ngIf="tag.editMode">
+    </mat-card-content>
+    <mat-card-actions class="flex h-right">
+        <button mat-stroked-button color="accent" (click)="activate()">Activate</button>
+    </mat-card-actions>
+</mat-card>
+<div *ngIf="tag.canEdit">
     <app-tag-item [tag]="tag" (tagUpdateEvent)="update()"></app-tag-item>
 </div>

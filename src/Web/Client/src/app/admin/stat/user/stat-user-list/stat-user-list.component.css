@@ -1,3 +1,7 @@
 .selected {
     background: lightblue;
 }
+
+#user-list-table {
+    width: 100%;
+}

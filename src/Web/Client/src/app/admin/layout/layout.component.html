@@ -1,9 +1,14 @@
-<nav>
-    <ul>
-        <li><a (click)="navigationService.gotoStat()">Statistic</a></li>
-        <li><a (click)="navigationService.gotoAccessPoint()">Access Point managment</a></li>
-        <li><a (click)="navigationService.gotoTag()">Tag managment</a></li>
-        <li><a>Export</a></li>
-    </ul>
-</nav>
-<router-outlet></router-outlet>
+<mat-nav-list class="flex h-right">
+    <a mat-list-item mat-stroked-button color="primary" class="button-nav"
+        (click)="navigationService.gotoStat()">Statistic</a>
+    <a mat-list-item mat-stroked-button color="primary" class="button-nav"
+        (click)="navigationService.gotoAccessPoint()">Access Point managment</a>
+    <a mat-list-item mat-stroked-button color="primary" class="button-nav" (click)="navigationService.gotoTag()">Tag
+        managment</a>
+    <a mat-list-item mat-stroked-button color="primary" class="button-nav">Export</a>
+</mat-nav-list>
+<h1 class="text-center" mat-h1>{{Title}}</h1>
+<hr />
+<section id="app-content">
+    <router-outlet></router-outlet>
+</section>

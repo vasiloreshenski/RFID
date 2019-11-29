@@ -12,6 +12,8 @@
 
         public bool IsActive { get; set; }
 
+        public bool IsDeleted { get; set; }
+
         public AccessLevel AccessLevel { get; set; }
 
         public DateTime CreateDate { get; set; }

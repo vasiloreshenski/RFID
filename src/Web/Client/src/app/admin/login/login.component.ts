@@ -1,5 +1,5 @@
 import { NavigationService } from './../../service/navigation-service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostBinding } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/service/auth-service';
 
@@ -9,6 +9,7 @@ import { AuthService } from 'src/app/service/auth-service';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
+  @HostBinding('class') class = 'h-center v-center';
   constructor(private authService: AuthService, private navigationService: NavigationService) { }
 
   login(email: string, password: string) {

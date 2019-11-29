@@ -1,4 +1,4 @@
-<div id="tag-container">
+<!-- <div id="tag-container">
     <div id="tag-active">
         <h3>Active</h3>
         <div *ngFor="let t of active" class="grid-item">
@@ -17,4 +17,32 @@
             <app-unknown-tag-item [unknownTag]="ut" (tagUpdateEvent)="reload()"></app-unknown-tag-item>
         </div>
     </div>
-</div>
+</div> -->
+
+<mat-sidenav-container id="container">
+    <mat-sidenav mode="side" opened>
+        <mat-nav-list id="nav-list" class="flex v-center">
+            <a mat-list-item mat-stroked-button color="primary" class="button-nav"
+                (click)="reloadActiveTags()">Active</a>
+            <a mat-list-item mat-stroked-button color="primary" class="button-nav"
+                (click)="reloadInActiveTags()">In-Active</a>
+            <a mat-list-item mat-stroked-button color="primary" class="button-nav"
+                (click)="reloadUnknownTags()">Unknown</a>
+            <a mat-list-item mat-stroked-button color="primary" class="button-nav"
+                (click)="reloadDeletedTags()">Deleted</a>
+        </mat-nav-list>
+    </mat-sidenav>
+    <mat-sidenav-content>
+        <h2 mat-h2 class="text-center">{{Title}}</h2>
+        <ng-container *ngIf="tags.length > 0">
+            <div *ngFor="let t of tags">
+                <app-tag-item [tag]="t" [users]="users" (tagUpdateEvent)="reload()"></app-tag-item>
+            </div>
+        </ng-container>
+        <ng-container *ngIf="unknown.length > 0">
+            <div *ngFor="let ut of unknown">
+                <app-unknown-tag-item [unknownTag]="ut" (tagUpdateEvent)="reload()"></app-unknown-tag-item>
+            </div>
+        </ng-container>
+    </mat-sidenav-content>
+</mat-sidenav-container>

@@ -1,0 +1,94 @@
+
+// Custom Theming for Angular Material
+// For more information: https://material.angular.io/guide/theming
+@import '~@angular/material/theming';
+// Plus imports for other components in your app.
+
+$custom-typography: mat-typography-config(
+  $font-family: 'Roboto, monospace',
+  $headline: mat-typography-level(2rem, 1.6rem, 700),
+  $body-1: mat-typography-level(1rem, 1rem, 500),
+  $button: mat-typography-level(1rem, 1rem, 300),
+  $input: mat-typography-level(1rem, 1, 500)
+);
+
+// Include the common styles for Angular Material. We include this here so that you only
+// have to load a single css file for Angular Material in your app.
+// Be sure that you only ever include this mixin once!
+@include mat-core($custom-typography);
+
+// Define the palettes for your theme using the Material Design palettes available in palette.scss
+// (imported above). For each palette, you can optionally specify a default, lighter, and darker
+// hue. Available color palettes: https://material.io/design/color/
+$rfid-primary: mat-palette($mat-orange, 400, 600);
+$rfid-accent: mat-palette($mat-blue, 200, 800);
+
+// The warn palette is optional (defaults to red).
+$rfid-warn: mat-palette($mat-red);
+
+// Create the theme object (a Sass map containing all of the palettes).
+$rfid-theme: mat-dark-theme($rfid-primary, $rfid-accent, $rfid-warn);
+
+// Include theme styles for core and each component used in your app.
+// Alternatively, you can import and @include the theme mixins for each component
+// that you are using.
+@include angular-material-theme($rfid-theme);
+
+html { height: 90%; width: 90%; margin: 0; }
+body { 
+    height: 100%; 
+    width: 100%;
+    margin: 30px; 
+    font-family: Roboto, "Helvetica Neue", sans-serif; 
+}
+
+#app-root {height: 100%; width: 100%; margin: 0; }
+
+.flex {
+    display: flex !important;
+    &.v-center {
+        flex-direction: column;
+    }
+    &.h-center {
+        align-items: center;
+        justify-content: center;
+    }
+    &.h-right {
+        justify-content: right;
+    }
+}
+
+.h-center {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.v-center {
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+}
+
+
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.button-nav {
+    border: none !important;
+    :hover {
+        text-decoration: underline !important;
+    }
+}
+
+.w-fill {
+    width:100%;
+}
+
+#app-layout {
+    width: 100%;
+}

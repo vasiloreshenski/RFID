@@ -139,8 +139,24 @@
         [HttpPatch("delete")]
         public async Task<IActionResult> DeleteAsync(Identity identity)
         {
-            var command = this.commandFactory.CreateDeleteAccessPointCommand();
-            var commandResult = await command.DeleteAsync(identity);
+            var command = this.commandFactory.CreateUpdateAccessPointCommand();
+            var commandResult = await command.UpdateAsync(new UpdateAccessPointRequestModel { Id = identity.Id, IsDeleted = true });
+
+            if (commandResult.Success)
+            {
+                return this.Ok();
+            }
+            else
+            {
+                return this.NotFound();
+            }
+        }
+
+        [HttpPatch("undelete")]
+        public async Task<IActionResult> UnDeleteAsync(Identity identity)
+        {
+            var command = this.commandFactory.CreateUpdateAccessPointCommand();
+            var commandResult = await command.UpdateAsync(new UpdateAccessPointRequestModel { Id = identity.Id, IsDeleted = false });
 
             if (commandResult.Success)
             {
@@ -162,6 +178,12 @@
         public async Task<IReadOnlyCollection<AccessPointResponseModel>> GetAllInActiveAsync()
         {
             return await this.database.GetAllInActiveAccessPointsAsync();
+        }
+
+        [HttpGet("deleted")]
+        public async Task<IReadOnlyCollection<AccessPointResponseModel>> GetAllDeletedAsync()
+        {
+            return await this.database.GetAllDeletedAccessPointsAsync();
         }
 
         [HttpGet("unknown")]

@@ -330,6 +330,10 @@ if object_id('access_control.f_get_in_active_access_points', 'IF') is not null
 	drop function acesss_control.f_get_in_active_access_points;
 go
 
+if object_id('access_control.f_get_deleted_access_points', 'IF') is not null
+	drop function access_control.f_get_deleted_access_points;
+go
+
 if object_id('access_control.f_get_unknown_active_points', 'IF') is not null
 	drop function access_control.f_get_unknown_active_points;
 go
@@ -481,7 +485,8 @@ return
 		ap.DirectionId,
 		ap.CreateDate,
 		ap.ModificationDate,
-		ap.IsActive
+		ap.IsActive,
+		ap.IsDeleted
 	from access_control.AccessPoints as ap
 	where ap.IsActive = 1
 	and ap.IsDeleted = 0
@@ -501,10 +506,31 @@ return
 		ap.DirectionId,
 		ap.CreateDate,
 		ap.ModificationDate,
-		ap.IsActive
+		ap.IsActive,
+		ap.IsDeleted
 	from access_control.AccessPoints as ap
 	where ap.IsActive = 0
 	and ap.IsDeleted = 0
+);
+go
+
+create function access_control.f_get_deleted_access_points()
+returns table
+as
+return
+(
+	select
+		ap.Id,
+		ap.SerialNumber,
+		ap.[Description],
+		ap.LevelId,
+		ap.DirectionId,
+		ap.CreateDate,
+		ap.ModificationDate,
+		ap.IsActive,
+		ap.IsDeleted
+	from access_control.AccessPoints as ap
+	where ap.IsDeleted = 1
 );
 go
 
@@ -531,6 +557,7 @@ return
 		t.Id,
 		t.CreateDate,
 		t.IsActive,
+		t.IsDeleted,
 		t.LevelId,
 		t.ModificationDate,
 		t.Number,
@@ -551,6 +578,7 @@ return
 		t.Id,
 		t.CreateDate,
 		t.IsActive,
+		t.IsDeleted,
 		t.LevelId,
 		t.ModificationDate,
 		t.Number,
@@ -559,18 +587,6 @@ return
 	join access_control.Users as u on t.UserId = u.Id
 	where t.IsActive = 0
 	and t.IsDeleted = 0
-);
-go
-
-create function access_control.f_get_users()
-returns table
-as
-return
-(
-	select
-		u.Id,
-		u.[Name]
-	from access_control.Users as u
 );
 go
 
@@ -588,6 +604,39 @@ return
 
 );
 go
+
+create function access_control.f_get_deleted_tags()
+returns table
+as
+return
+(
+	select
+		t.Id,
+		t.CreateDate,
+		t.IsActive,
+		t.IsDeleted,
+		t.LevelId,
+		t.ModificationDate,
+		t.Number,
+		u.[Name] as [UserName]
+	from access_control.Tags as t
+	join access_control.Users as u on t.UserId = u.Id
+	where t.IsDeleted = 1
+)
+go
+
+create function access_control.f_get_users()
+returns table
+as
+return
+(
+	select
+		u.Id,
+		u.[Name]
+	from access_control.Users as u
+);
+go
+
 
 create function access_control.f_check_access(@access_point_serial_number nvarchar(400), @tag_number nvarchar(100))
 returns bit
@@ -993,6 +1042,7 @@ create procedure access_control.usp_insert_or_update_access_point
 	@serial_number nvarchar(400),
 	@description nvarchar(max),
 	@is_active bit,
+	@is_deleted bit,
 	@level_id int,
 	@direction_id int,
 	@identity int output
@@ -1006,7 +1056,7 @@ begin
 	if @added = 1
 	begin
 		insert into access_control.AccessPoints(SerialNumber, [Description], IsActive, LevelId, DirectionId, IsDeleted) 
-		values(@serial_number, @description, @is_active, @level_id, @direction_id, 0);
+		values(@serial_number, @description, @is_active, @level_id, @direction_id, @is_deleted);
 		set @identity = SCOPE_IDENTITY();
 	end
 	else
@@ -1016,7 +1066,8 @@ begin
 				[Description] = iif(@description is not null, @description, [Description]),
 				[IsActive] = iif(@is_active is not null, @is_active, IsActive),
 				[LevelId] = iif(@level_id is not null, @level_id, LevelId),
-				[DirectionId] = iif(@direction_id is not null, @direction_id, DirectionId)
+				[DirectionId] = iif(@direction_id is not null, @direction_id, DirectionId),
+				[IsDeleted] = iif(@is_deleted is not null, @is_deleted, IsDeleted)
 		where SerialNumber = @serial_number
 	end
 
@@ -1037,7 +1088,7 @@ begin
 	declare @added bit;
 	if @identity is null or @identity = 0
 	begin
-		exec @added = access_control.usp_insert_or_update_access_point @serial_number, @description, @is_active, @level_id, @direction_id, @identity output
+		exec @added = access_control.usp_insert_or_update_access_point @serial_number, @description, @is_active, 0, @level_id, @direction_id, @identity output
 	end
 
 	return @added;

@@ -32,7 +32,8 @@ namespace RFID.REST.Areas.Administration.Commands
                         description: requestModel.Description,
                         isActive: requestModel.IsActive,
                         accessLevel: requestModel.AccessLevel,
-                        direction: requestModel.Direction
+                        direction: requestModel.Direction,
+                        isDeleted: requestModel.IsDeleted
                     );
 
                     transaction.Commit();

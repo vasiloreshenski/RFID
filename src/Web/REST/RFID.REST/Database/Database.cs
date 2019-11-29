@@ -161,6 +161,7 @@
             IDbTransaction transaction,
             String description = null,
             bool? isActive = null,
+            bool? isDeleted = null,
             AccessLevel? accessLevel = null,
             AccessPointDirectionType? direction = null)
         {
@@ -171,7 +172,7 @@
             }
             else
             {
-                var param = new DynamicParameters(new { serial_number = serialNumber, description = description, is_active = isActive, level_id = (int?)accessLevel, direction_id = (int?)direction });
+                var param = new DynamicParameters(new { serial_number = serialNumber, description = description, is_active = isActive, is_deleted = isDeleted, level_id = (int?)accessLevel, direction_id = (int?)direction });
                 param.AddIdentity();
 
                 var inserted = await transaction.ExecuteStoreProcedureAsync<bool>("access_control.usp_insert_or_update_access_point", param);
@@ -331,7 +332,8 @@
                         x.DirectionId as Direction, 
                         x.CreateDate, 
                         x.ModificationDate, 
-                        x.IsActive
+                        x.IsActive,
+                        x.IsDeleted
                     from access_control.f_get_active_access_points() as x");
 
                 return dbResult.ToList();
@@ -351,8 +353,30 @@
                         x.DirectionId as Direction, 
                         x.CreateDate, 
                         x.ModificationDate, 
-                        x.IsActive
+                        x.IsActive,
+                        x.IsDeleted
                     from access_control.f_get_in_active_access_points() as x");
+
+                return dbResult.ToList();
+            }
+        }
+
+        public async Task<IReadOnlyCollection<AccessPointResponseModel>> GetAllDeletedAccessPointsAsync()
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var dbResult = await connection.QueryAsync<AccessPointResponseModel>(@"
+                    select 
+                        x.Id, 
+                        x.SerialNumber, 
+                        x.Description, 
+                        x.LevelId as AccessLevel, 
+                        x.DirectionId as Direction, 
+                        x.CreateDate, 
+                        x.ModificationDate, 
+                        x.IsActive,
+                        x.IsDeleted
+                    from access_control.f_get_deleted_access_points() as x");
 
                 return dbResult.ToList();
             }
@@ -376,6 +400,7 @@
                     select
                         x.Id,
                         x.IsActive,
+                        x.IsDeleted,
                         x.LevelId as AccessLevel,
                         x.CreateDate,
                         x.ModificationDate,
@@ -396,12 +421,34 @@
                     select
                         x.Id,
                         x.IsActive,
+                        x.IsDeleted,
                         x.LevelId as AccessLevel,
                         x.CreateDate,
                         x.ModificationDate,
                         x.Number,
                         x.UserName
                     from access_control.f_get_not_active_tags() as x
+                ");
+
+                return dbResult.ToList();
+            }
+        }
+
+        public async Task<IReadOnlyCollection<TagResponseModel>> GetAllDeletedTagsAsync()
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var dbResult = await connection.QueryAsync<TagResponseModel>(@"
+                    select
+                        x.Id,
+                        x.IsActive,
+                        x.IsDeleted,
+                        x.LevelId as AccessLevel,
+                        x.CreateDate,
+                        x.ModificationDate,
+                        x.Number,
+                        x.UserName
+                    from access_control.f_get_deleted_tags() as x
                 ");
 
                 return dbResult.ToList();

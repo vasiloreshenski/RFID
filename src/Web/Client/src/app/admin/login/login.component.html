@@ -1,9 +1,12 @@
-<form>
-    <div>
-        <input placeholder="Email" type="text" #emailInput/>
-    </div>
-    <div>
-        <input placeholder="Password" type="password" #passwordInput/>
-    </div>
-    <button (click)="login(emailInput.value, passwordInput.value)">Login</button>
+<h1 color="primary" class="text-center mat-h1">Login</h1>
+<form class="flex v-center">
+    <mat-form-field>
+        <input placeholder="Email" matInput color="primary" class="text-center big-typo" type="text" #emailInput />
+    </mat-form-field>
+    <mat-form-field>
+        <input placeholder="Password" matInput color="primary" class="text-center big-typo" type="password"
+            #passwordInput />
+    </mat-form-field>
+    <button mat-stroked-button color="primary" class="h-center"
+        (click)="login(emailInput.value, passwordInput.value)">Log in</button>
 </form>

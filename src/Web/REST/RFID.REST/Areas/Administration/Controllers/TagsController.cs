@@ -116,6 +116,22 @@
             }
         }
 
+        [HttpPatch("undelete")]
+        public async Task<IActionResult> UnDeleteAsync(Identity identity)
+        {
+            var command = this.commandFactory.CreateUpdateTagCommand();
+            var commandResult = await command.UpdateAsync(new UpdateTagRequestModel { Id = identity.Id, IsDeleted = false });
+
+            if (commandResult.Success)
+            {
+                return this.Ok();
+            }
+            else
+            {
+                return this.NotFound();
+            }
+        }
+
         /// <summary>
         /// Changes the access level of the specified tag
         /// </summary>
@@ -176,6 +192,12 @@
         {
             var unknown = await this.database.GetAllUnKnownActiveTagsAsync();
             return this.Ok(unknown);
+        }
+
+        [HttpGet("deleted")]
+        public async Task<IActionResult> GetAllDeletedTagsAsync()
+        {
+            return this.Ok(await this.database.GetAllDeletedTagsAsync());
         }
     }
 }

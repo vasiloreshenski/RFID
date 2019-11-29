@@ -5,7 +5,7 @@ import { DirectionType } from '../../../model/direction-type';
 import { AccessLevelType } from '../../../model/access-level-type';
 import { RfidHttpClient } from '../../../service/rfid-http-client';
 import { AccessPoint } from '../../../model/access-point';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output } from '@angular/core';
 
 @Component({
   selector: 'app-access-point-list',
@@ -13,39 +13,66 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./access-point-list.component.css']
 })
 export class AccessPointListComponent implements OnInit {
-  public activeAccessPoints: AccessPoint[] = [];
-  public inActiveAccessPoints: AccessPoint[] = [];
+
+  public Title: string;
+  public accessPoints: AccessPoint[] = [];
   public unknownAccessPoints: UnknownAccessPoint[] = [];
 
   constructor(private rfidHttpClient: RfidHttpClient, private navigationService: NavigationService) { }
 
   public reloadAccessPoints(): void {
-    this.reloadActiveAccessPoints();
-    this.reloadInActiveAccessPoints();
-    this.reloadUnKnownAccessPoints();
+    if (this.accessPoints.some(x => x.isDeleted)) {
+      this.reloadDeletedAccessPoints();
+    } else if (this.accessPoints.some(x => x.isActive)) {
+      this.reloadActiveAccessPoints();
+    } else if (this.accessPoints.length > 0) {
+      this.reloadInActiveAccessPoints();
+    } else if (this.unknownAccessPoints.length > 0) {
+      this.reloadUnKnownAccessPoints();
+    } else {
+      this.reloadActiveAccessPoints();
+    }
   }
 
   public reloadActiveAccessPoints(): void {
+    this.unknownAccessPoints = [];
+    this.Title = 'Active';
     this.rfidHttpClient.getActiveAccessPoints().subscribe(
       data => {
-        this.activeAccessPoints = [];
-        this.activeAccessPoints.push(...data);
+        this.accessPoints = [];
+        this.accessPoints.push(...data);
       },
       error => console.log(error)
     );
   }
 
   public reloadInActiveAccessPoints(): void {
+    this.unknownAccessPoints = [];
+    this.Title = 'In-Active';
     this.rfidHttpClient.getInActiveAccessPoints().subscribe(
       data => {
-        this.inActiveAccessPoints = [];
-        this.inActiveAccessPoints.push(...data);
+        this.accessPoints = [];
+        this.accessPoints.push(...data);
+      },
+      error => console.log(error)
+    );
+  }
+
+  public reloadDeletedAccessPoints(): void {
+    this.unknownAccessPoints = [];
+    this.Title = 'Deleted';
+    this.rfidHttpClient.getInDeletedAccessPoints().subscribe(
+      data => {
+        this.accessPoints = [];
+        this.accessPoints.push(...data);
       },
       error => console.log(error)
     );
   }
 
   public reloadUnKnownAccessPoints(): void {
+    this.Title = 'Unknown';
+    this.accessPoints = [];
     this.rfidHttpClient.getUnknownAccessPoints().subscribe(
       data => {
         this.unknownAccessPoints = [];

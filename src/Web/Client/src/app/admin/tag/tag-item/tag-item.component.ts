@@ -1,3 +1,4 @@
+import { FormControl, Validators } from '@angular/forms';
 import { HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { HtmlService } from './../../../service/html-service';
@@ -7,6 +8,7 @@ import { TagUser } from 'src/app/model/tag-user';
 import { AccessLevelType } from './../../../model/access-level-type';
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
 import { Tag } from 'src/app/model/tag';
+import { startWith, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-tag-item',
@@ -14,10 +16,6 @@ import { Tag } from 'src/app/model/tag';
   styleUrls: ['./tag-item.component.css']
 })
 export class TagItemComponent implements OnInit {
-  public accessLevels: String[] = [
-    AccessLevelType[AccessLevelType.Low], AccessLevelType[AccessLevelType.Mid], AccessLevelType[AccessLevelType.High]
-  ];
-
   @Output()
   public tagUpdateEvent = new EventEmitter();
 
@@ -27,21 +25,33 @@ export class TagItemComponent implements OnInit {
   @Input()
   public users: TagUser[];
 
+  public accessLevels: String[] = [
+    AccessLevelType[AccessLevelType.Low], AccessLevelType[AccessLevelType.Mid], AccessLevelType[AccessLevelType.High]
+  ];
+
+  public filteredUsers: Observable<TagUser[]>;
+
+  public userControl = new FormControl('', [Validators.required]);
+  public accessLevelControl = new FormControl('');
+
   constructor(private rfidHttp: RfidHttpClient) { }
 
   public edit() {
-    this.tag.editMode = true;
+    this.tag.canEdit = true;
+    this.enableDisableControls();
     return false;
   }
 
-  public cancel(userNameInput: HTMLInputElement, accessLevelSelect: HTMLSelectElement) {
-    this.tag.editMode = false;
-    userNameInput.value = this.tag.userName;
-    HtmlService.selectOption(accessLevelSelect, this.tag.getAccessLevelDisplayText());
+  public cancel() {
+    this.tag.canEdit = false;
+    this.enableDisableControls();
+    this.initControls();
     return false;
   }
 
-  public save(userName: string, accessLevel: string) {
+  public save() {
+    const userName = this.userControl.value;
+    const accessLevel = this.accessLevelControl.value;
     let httpResponse$: Observable<HttpResponse<Object>>;
     if (this.tag.isRegistered()) {
       const requestModel = ModelFactory.updateTagRequestModel(this.tag.id, userName, accessLevel);
@@ -81,6 +91,36 @@ export class TagItemComponent implements OnInit {
     return false;
   }
 
+  public unDelete() {
+    this.rfidHttp.unDeleteTag(this.tag.id).subscribe(
+      data => this.tagUpdateEvent.emit(),
+      error => console.log(error)
+    );
+    return false;
+  }
+
   ngOnInit() {
+    this.initControls();
+    this.enableDisableControls();
+
+    this.filteredUsers = this.userControl.valueChanges.pipe(
+      startWith(''),
+      map(value => this.users.filter(u => u.userName.toLowerCase().includes(value)))
+    );
+  }
+
+  private initControls(): void {
+    this.userControl.setValue(this.tag.userName);
+    this.accessLevelControl.setValue(this.tag.getAccessLevelDisplayText());
+  }
+
+  private enableDisableControls(): void {
+    if (this.tag.canEdit) {
+      this.userControl.enable();
+      this.accessLevelControl.enable();
+    } else {
+      this.userControl.disable();
+      this.accessLevelControl.disable();
+    }
   }
 }

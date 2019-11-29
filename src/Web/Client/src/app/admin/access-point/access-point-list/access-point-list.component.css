@@ -1,14 +1,11 @@
-#apm-container {
-    width: 80%;
-    display: grid;
-    grid-template-columns: 33% 33% 33%;
+#app-sidenav-container {
+    height: 100%;
+    min-width: 760px;
+    min-height: 400px;
 }
 
-#apm-container h3 {
-    text-align: center;
-}
-
-.grid-item {
-    margin:1.2em;
-    border: 1px solid black;
+#app-side-nav {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }

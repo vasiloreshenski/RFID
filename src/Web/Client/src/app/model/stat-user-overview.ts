@@ -1,5 +1,7 @@
+import { DateTime } from './date-time';
+
 export class StatUserOverview {
-    public avgEntranceTime: Date;
-    public avgExitTime: Date;
-    public avgWorkHourNorm: Date;
+    public avgEntranceTime: DateTime;
+    public avgExitTime: DateTime;
+    public avgWorkHourNorm: DateTime;
 }

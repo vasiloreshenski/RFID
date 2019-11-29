@@ -2,19 +2,21 @@ import { AccessLevelType } from 'src/app/model/access-level-type';
 export class Tag {
     public id: number;
     public isActive: boolean;
+    public isDeleted: boolean;
     public accessLevel: number;
     public createDate: Date;
     public modificationDate: Date;
     public number: string;
     public userName: string;
-    public editMode: boolean;
+    public canEdit: boolean;
 
     public static default(): Tag {
         const obj = new Tag();
         obj.isActive = true;
+        obj.isDeleted = false;
         obj.accessLevel = 1;
         obj.createDate = new Date(Date.now());
-        obj.editMode = false;
+        obj.canEdit = false;
         return obj;
     }
 

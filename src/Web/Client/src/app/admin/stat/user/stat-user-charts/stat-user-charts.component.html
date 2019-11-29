@@ -1,36 +1,50 @@
 <div>
-    <h3>Work hour norm</h3>
     <div class="chart-container">
-        <ngx-charts-bar-vertical [results]="workHourNormPerDays" [gradient]="false" [xAxis]="true" [yAxis]="true"
-            [legend]="false" [showXAxisLabel]="true" [showYAxisLabel]="true" [xAxisLabel]="'Days'"
-            [yAxisLabel]="'Norm in minutes'" [scheme]="'ocean'">
+        <h3 mat-h3 class="text-center">Work hour norm</h3>
+        <ngx-charts-bar-vertical class="chart" [results]="workHourNormPerDays" [gradient]="false" [xAxis]="true"
+            [yAxis]="true" [legend]="false" [showXAxisLabel]="true" [showYAxisLabel]="true" [xAxisLabel]="'Days'"
+            [yAxisLabel]="'Norm in minutes'" [scheme]="'nightLights'">
         </ngx-charts-bar-vertical>
     </div>
-    <div>
-        <label for="workHourNormStartDate">Start date: </label>
-        <input name="workHourNormStartDate" type="date" [value]="workHourNormStartSearchDate | date:'yyyy-MM-dd'"
-            (change)="loadNormWorkHours($event.target.value, endDateInput.value)" #startDateInput />
-
-        <label for="workHourNormEndDate">End date: </label>
-        <input name="workHourNormEndDate" type="date" [value]="workHourNormEndSearchDate | date:'yyyy-MM-dd'"
-            (change)="loadNormWorkHours(startDateInput.value, $event.target.value)" #endDateInput />
+    <div class="date-picker-container flex h-right">
+        <mat-form-field class="date-picker">
+            <input matInput [matDatepicker]="startDatePicker" placeholder="Choose a start date"
+                [value]="workHourNormStartSearchDate | date:'yyyy-MM-dd'"
+                (dateChange)="loadNormWorkHours($event.target.value, endDateInput.value)" #startDateInput>
+            <mat-datepicker-toggle matSuffix [for]=" startDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #startDatePicker></mat-datepicker>
+        </mat-form-field>
+        <mat-form-field class="date-picker">
+            <input matInput color="primary" [matDatepicker]="endDatePicker" placeholder="Choose a end date"
+                [value]="workHourNormEndSearchDate | date:'yyyy-MM-dd'"
+                (dateChange)="loadNormWorkHours(startDateInput.value, $event.target.value)" #endDateInput>
+            <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #endDatePicker></mat-datepicker>
+        </mat-form-field>
     </div>
-    <h3>Entrance / exit time</h3>
     <div class="chart-container">
-        <ngx-charts-line-chart [scheme]="'fire'" [results]="entranceExitTimePerDay" [gradient]="false" [xAxis]="true"
-            [yAxis]="true" [legend]="false" [showXAxisLabel]="true" [showYAxisLabel]="true" [xAxisLabel]="'Days'"
-            [yAxisLabel]="'Time'" [yAxisTickFormatting]="formatMinutesAsTime">
+        <h3 mat-h3 class="text-center">Entrance / exit time</h3>
+        <ngx-charts-line-chart class="chart" [scheme]="'cool'" [results]="entranceExitTimePerDay" [gradient]="false"
+            [xAxis]="true" [yAxis]="true" [legend]="false" [showXAxisLabel]="true" [showYAxisLabel]="true"
+            [xAxisLabel]="'Days'" [yAxisLabel]="'Time'" [yAxisTickFormatting]="formatMinutesAsTime">
         </ngx-charts-line-chart>
     </div>
-    <div>
-        <label for="entranceExitTimeStartDate">Start date: </label>
-        <input name="entranceExitTimeStartDate" type="date" [value]="entranceExitTimeStartDate | date:'yyyy-MM-dd'"
-            (change)="loadEntranceExitTime($event.target.value, entranceExitTimeEndDateInput.value)"
-            #entranceExitTimeStartDateInput />
-
-        <label for="entranceExitTimeEndDate">End date: </label>
-        <input name="entranceExitTimeEndDate" type="date" [value]="entractExitTimeEndDate | date:'yyyy-MM-dd'"
-            (change)="loadEntranceExitTime(entranceExitTimeStartDateInput.value, $event.target.value)"
-            #entranceExitTimeEndDateInput />
+    <div class="date-picker-container flex h-right">
+        <mat-form-field class="date-picker">
+            <input matInput color="primary" [matDatepicker]="entranceStartDatePicker" placeholder="Choose a start date"
+                [value]="workHourNormStartSearchDate | date:'yyyy-MM-dd'"
+                (dateChange)="loadEntranceExitTime($event.target.value, entranceEndDateInput.value)"
+                #entranceStartDateInput>
+            <mat-datepicker-toggle matSuffix [for]=" entranceStartDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #entranceStartDatePicker></mat-datepicker>
+        </mat-form-field>
+        <mat-form-field class="date-picker">
+            <input matInput color="primary" [matDatepicker]="entranceEndDatePicker" placeholder="Choose a end date"
+                [value]="workHourNormEndSearchDate | date:'yyyy-MM-dd'"
+                (dateChange)="loadEntranceExitTime(entranceStartDateInput.value, $event.target.value)"
+                #entranceEndDateInput>
+            <mat-datepicker-toggle matSuffix [for]="entranceEndDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #entranceEndDatePicker></mat-datepicker>
+        </mat-form-field>
     </div>
 </div>

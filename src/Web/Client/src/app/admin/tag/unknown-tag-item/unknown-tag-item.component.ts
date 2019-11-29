@@ -21,7 +21,7 @@ export class UnknownTagItemComponent implements OnInit {
   public activate() {
     this.tag = Tag.default();
     this.tag.number = this.unknownTag.number;
-    this.tag.editMode = true;
+    this.tag.canEdit = true;
     return false;
   }
 

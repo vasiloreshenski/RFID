@@ -1,0 +1,6 @@
+.chart-container {
+    width: 600px;
+    height: 150px;
+}
+
+.chart { fill: #e0e0e0 !important; }

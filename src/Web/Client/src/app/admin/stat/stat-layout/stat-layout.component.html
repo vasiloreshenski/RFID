@@ -1,7 +1,20 @@
-<nav>
+<!-- <nav>
     <ul>
         <li><a (click)="navigationService.gotoStatSummary()">Summary</a></li>
         <li><a (click)="navigationService.gotoStatUser()">User</a></li>
     </ul>
-</nav>
-<router-outlet></router-outlet>
+</nav> -->
+<mat-sidenav-container id="side-nav-container">
+    <mat-sidenav mode="side" opened>
+        <mat-nav-list id="side-nav-list" class="flex v-center">
+            <a mat-list-item mat-stroked-button color="primary" class="button-nav">Summary</a>
+            <a mat-list-item mat-stroked-button color="primary" class="button-nav">Users</a>
+            <a mat-list-item mat-stroked-button color="primary" class="button-nav">Access points</a>
+        </mat-nav-list>
+    </mat-sidenav>
+    <mat-sidenav-content id="side-nav-content">
+        <div>
+            <router-outlet></router-outlet>
+        </div>
+    </mat-sidenav-content>
+</mat-sidenav-container>

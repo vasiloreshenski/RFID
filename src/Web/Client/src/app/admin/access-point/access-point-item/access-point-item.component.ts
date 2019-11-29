@@ -6,6 +6,7 @@ import { AccessLevelType } from 'src/app/model/access-level-type';
 import { DirectionType } from 'src/app/model/direction-type';
 import { ModelFactory } from 'src/app/model/model-factory';
 import { subscribeOn } from 'rxjs/operators';
+import { Validators, FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-access-point-item',
@@ -28,15 +29,25 @@ export class AccessPointItemComponent implements OnInit {
   @Output()
   public accessPointUpdate = new EventEmitter();
 
+  public descriptionControl = new FormControl('', [Validators.required, Validators.minLength(1)]);
+  public accessLevelControl = new FormControl('');
+  public directionControl = new FormControl('');
+
   constructor(private rfidHttpClient: RfidHttpClient) { }
 
   ngOnInit() {
+    this.enableDisableControls();
+    this.initControls();
   }
 
-  public registerOrUpdate(description: string, accessLevelText: string, directionText: string) {
+  public registerOrUpdate() {
     if (this.accessPoint.isRegistered()) {
       const requestModel = ModelFactory.updateAccessPointRequestModel(
-        this.accessPoint.id, description, accessLevelText, directionText, this.accessPoint.isActive
+        this.accessPoint.id,
+        this.descriptionControl.value,
+        this.accessLevelControl.value,
+        this.directionControl.value,
+        this.accessPoint.isActive
       );
       this.rfidHttpClient.updateAccessPoint(requestModel).subscribe(
         data => this.accessPointUpdate.emit(),
@@ -44,7 +55,11 @@ export class AccessPointItemComponent implements OnInit {
       );
     } else {
       const requestModel = ModelFactory.registerAccessPointRequestModel(
-        this.accessPoint.serialNumber, description, accessLevelText, directionText, this.accessPoint.isActive
+        this.accessPoint.serialNumber,
+        this.descriptionControl.value,
+        this.accessLevelControl.value,
+        this.directionControl.value,
+        this.accessPoint.isActive
       );
       this.rfidHttpClient.registerAccessPoint(requestModel).subscribe(
         data => this.accessPointUpdate.emit(),
@@ -79,15 +94,42 @@ export class AccessPointItemComponent implements OnInit {
     return false;
   }
 
-  public enableEdit() {
-    this.accessPoint.canEdit = true;
+  public unDelete() {
+    if (this.accessPoint.isDeleted) {
+      this.rfidHttpClient.unDeleteAccessPoint(this.accessPoint.id).subscribe(
+        data => this.accessPointUpdate.emit(),
+        error => console.log(error)
+      );
+    }
+    return false;
   }
 
-  public cancelEdit(accessLevelSelect: HTMLSelectElement, directionSelect: HTMLSelectElement, descriptionTextArea: HTMLTextAreaElement) {
+  public enableEdit() {
+    this.accessPoint.canEdit = true;
+    this.enableDisableControls();
+  }
+
+  public cancelEdit() {
     this.accessPoint.canEdit = false;
-    // refresh state
-    HtmlService.selectOption(accessLevelSelect, this.accessPoint.getAccessLevelText());
-    HtmlService.selectOption(directionSelect, this.accessPoint.getDirectionText());
-    descriptionTextArea.value = this.accessPoint.description;
+    this.enableDisableControls();
+    this.initControls();
+  }
+
+  private enableDisableControls() {
+    if (this.accessPoint.canEdit) {
+      this.descriptionControl.enable();
+      this.accessLevelControl.enable();
+      this.directionControl.enable();
+    } else {
+      this.descriptionControl.disable();
+      this.accessLevelControl.disable();
+      this.directionControl.disable();
+    }
+  }
+
+  private initControls() {
+    this.descriptionControl.setValue(this.accessPoint.description);
+    this.accessLevelControl.setValue(this.accessPoint.getAccessLevelText());
+    this.directionControl.setValue(this.accessPoint.getDirectionText());
   }
 }

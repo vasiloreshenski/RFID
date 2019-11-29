@@ -12,7 +12,9 @@ export class StatUserListComponent implements OnInit {
   @Output()
   public selectedUserEvent: EventEmitter<StatUser> = new EventEmitter<StatUser>();
   public selectedUser: StatUser;
+  public selectedRow: any;
   public users: StatUser[] = [];
+  public columns: String[] = ['userName', 'avgEntranceTime', 'avgExitTime', 'avgWorkHourNorm'];
 
   constructor(private rfidHttpClient: RfidHttpClient) { }
 

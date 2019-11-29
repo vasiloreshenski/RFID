@@ -10,13 +10,22 @@ import { Component, OnInit } from '@angular/core';
 export class StatUserOverviewComponent implements OnInit {
 
   public overview: StatUserOverview;
+  public data: any[] = [];
 
   constructor(private rfidHttpClient: RfidHttpClient) { }
 
   ngOnInit() {
     this.overview = new StatUserOverview();
     this.rfidHttpClient.getStatUserOverview().subscribe(
-      data => this.overview = data,
+      response => {
+        this.overview = response;
+        this.data = [];
+        this.data.push(
+          { 'name': 'Avg. entrance time', 'value': response.avgEntranceTime.time },
+          { 'name': 'Avg. exit time', 'value': response.avgExitTime.time },
+          { 'name': 'Avg. work hour norm', 'value': response.avgWorkHourNorm.time }
+        );
+      },
       error => console.log(error)
     );
   }

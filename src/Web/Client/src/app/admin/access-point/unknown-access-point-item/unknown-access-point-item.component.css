@@ -1,4 +1,8 @@
-.field-wrapper > .label-value {
-    margin-top: 0.8em;
-    margin-left: 1.05em;
+.wrapper {
+    margin: 15px;
+    min-width: 600px;
+}
+
+div {
+    padding: 5px;
 }
