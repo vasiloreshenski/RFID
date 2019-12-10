@@ -24,7 +24,7 @@
             </div>
             <mat-divider [vertical]="true" color="primary" class="devider"></mat-divider>
             <p class="w-fill">
-                <mat-form-field class="w-fill" hintLabel="Not empty">
+                <mat-form-field class="w-fill" hintLabel="Min. 1 charachter length required" color="primary">
                     <textarea name="description" placeholder="Description" [formControl]="descriptionControl"
                         minlength="1" rows="5" matInput required>{{accessPoint.description}}</textarea>
                     <mat-error *ngIf="descriptionControl.invalid">Description can't be empty</mat-error>
@@ -41,16 +41,16 @@
         </div>
     </mat-card-content>
     <mat-card-actions class="flex h-right">
-        <button mat-stroked-button color="accent" *ngIf="accessPoint.canEdit==false" class='button edit'
-            (click)="enableEdit()">Edit</button>
-        <button mat-stroked-button color="accent" *ngIf="accessPoint.canEdit" (click)="cancelEdit()">Cancel</button>
         <button mat-stroked-button color="accent" (click)="updateActivateStatus()"
             [disabled]="accessPoint.canEdit || accessPoint.isDeleted">{{accessPoint.isActive ? "De-Activate" : "Activate"}}</button>
         <button *ngIf="accessPoint.isDeleted==false" mat-stroked-button color="accent" (click)="delete()"
             [disabled]="accessPoint.canEdit">Delete</button>
         <button *ngIf="accessPoint.isDeleted" mat-stroked-button color="accent" (click)="unDelete()"
             [disabled]="accessPoint.isRegistered() && accessPoint.canEdit">Recover deleted</button>
+        <button mat-stroked-button color="accent" *ngIf="accessPoint.canEdit==false" class='button edit'
+            (click)="enableEdit()">Edit</button>
+        <button mat-stroked-button color="accent" *ngIf="accessPoint.canEdit" (click)="cancelEdit()">Cancel</button>
         <button mat-stroked-button color="accent" class='button save' (click)="registerOrUpdate()"
-            [disabled]="accessPoint.canEdit == false">Save</button>
+            [disabled]="accessPoint.canEdit == false || areControlsValid() == false">Save</button>
     </mat-card-actions>
 </mat-card>

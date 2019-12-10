@@ -9,6 +9,8 @@ import { AccessLevelType } from './../../../model/access-level-type';
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
 import { Tag } from 'src/app/model/tag';
 import { startWith, map } from 'rxjs/operators';
+import { NotificationService } from 'src/app/service/notification-service';
+import { ProgressService } from 'src/app/service/progress-service';
 
 @Component({
   selector: 'app-tag-item',
@@ -34,7 +36,10 @@ export class TagItemComponent implements OnInit {
   public userControl = new FormControl('', [Validators.required]);
   public accessLevelControl = new FormControl('');
 
-  constructor(private rfidHttp: RfidHttpClient) { }
+  constructor(
+    private rfidHttp: RfidHttpClient,
+    private notificationService: NotificationService,
+    private progressService: ProgressService) { }
 
   public edit() {
     this.tag.canEdit = true;
@@ -61,11 +66,10 @@ export class TagItemComponent implements OnInit {
       httpResponse$ = this.rfidHttp.registerTag(requestModel);
     }
 
-    httpResponse$.subscribe(
-      data => this.tagUpdateEvent.emit(),
-      error => console.log(error)
-    );
-
+    this.progressService.executeWithProgress(httpResponse$, data => {
+      this.tagUpdateEvent.emit();
+      this.notificationService.successUpdateTag();
+    });
     return false;
   }
 
@@ -76,27 +80,36 @@ export class TagItemComponent implements OnInit {
     } else {
       httpResponse$ = this.rfidHttp.activateTag(this.tag.id);
     }
-    httpResponse$.subscribe(
-      data => this.tagUpdateEvent.emit(),
-      error => console.log(error)
-    );
+    this.progressService.executeWithProgress(httpResponse$, data => {
+      this.tagUpdateEvent.emit();
+      if (this.tag.isActive) {
+        this.notificationService.successDeActivateTag();
+      } else {
+        this.notificationService.successActivateTag();
+      }
+    });
+
     return false;
   }
 
   public delete() {
-    this.rfidHttp.deleteTag(this.tag.id).subscribe(
-      data => this.tagUpdateEvent.emit(),
-      error => console.log(error)
-    );
+    this.progressService.executeWithProgress(this.rfidHttp.deleteTag(this.tag.id), data => {
+      this.tagUpdateEvent.emit();
+      this.notificationService.successDeleteTag();
+    });
     return false;
   }
 
   public unDelete() {
-    this.rfidHttp.unDeleteTag(this.tag.id).subscribe(
-      data => this.tagUpdateEvent.emit(),
-      error => console.log(error)
-    );
+    this.progressService.executeWithProgress(this.rfidHttp.unDeleteTag(this.tag.id), data => {
+      this.tagUpdateEvent.emit();
+      this.notificationService.successRecoverTag();
+    });
     return false;
+  }
+
+  public areControlsValid(): boolean {
+    return this.userControl.valid && this.accessLevelControl.valid;
   }
 
   ngOnInit() {
@@ -112,6 +125,7 @@ export class TagItemComponent implements OnInit {
   private initControls(): void {
     this.userControl.setValue(this.tag.userName);
     this.accessLevelControl.setValue(this.tag.getAccessLevelDisplayText());
+    this.userControl.markAsTouched();
   }
 
   private enableDisableControls(): void {

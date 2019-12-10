@@ -305,8 +305,36 @@ create index idx_stat_Events_AccessPointDirectionId on stat.[Events](AccessPoint
 create index idx_stat_Events_AccessPointIsActive on stat.[Events](AccessPointIsActive);
 create index idx_stat_Events_AccessPointIsDeleted on stat.[Events](AccessPointIsDeleted);
 create index idx_stat_Events_AccessPointIsUnknown on stat.[Events](AccessPointIsUnknown);
+go
 
+-- log
 
+create schema [log];
+go
+
+create table [log].[Type]
+(
+	Id int not null identity(1, 1),
+	[Name] nvarchar(100) not null
+
+	constraint PK_log_type primary key(Id)
+);
+go
+
+create table [log].Client
+(
+	Id int not null identity(1, 1),
+	CreateDate datetime2 not null default(getdate()),
+	[TypeId] int not null,
+	[Message] nvarchar(max) not null
+
+	constraint PK_log_client primary key(Id),
+	constraint FK_log_client_type foreign key (TypeId) references [log].[Type]
+);
+go
+
+insert into [log].[Type]([Name]) values ('Error');
+go
 
 -- functions
 
@@ -947,6 +975,10 @@ if object_id('stat.usp_insert_event', 'P') is not null
 	drop procedure access_control.usp_insert_event;
 go
 
+if object_id('log.insert_client_log', 'P') is not null
+	drop procedure [log].insert_client_log;
+go
+
 if type_id ('dbo.IntList') is not null
 	drop type dbo.IntList;
 go
@@ -1063,7 +1095,7 @@ begin
 	begin
 		update access_control.AccessPoints
 			set
-				[Description] = iif(@description is not null, @description, [Description]),
+				[Description] = iif(@description is not null and @description <> '', @description, [Description]),
 				[IsActive] = iif(@is_active is not null, @is_active, IsActive),
 				[LevelId] = iif(@level_id is not null, @level_id, LevelId),
 				[DirectionId] = iif(@direction_id is not null, @direction_id, DirectionId),
@@ -1277,5 +1309,14 @@ begin
 	from (values (@access_point_serial_number, @tag_number)) as x(ap_serial_number, t_number)
 	left join access_control.AccessPoints as ap on ap.SerialNumber = x.ap_serial_number
 	left join access_control.Tags as t on t.Number = x.t_number
+end;
+go
+
+create procedure [log].insert_client_log
+	@message nvarchar(max),
+	@type_id int
+as
+begin
+	insert into [log].Client([Message], [TypeId]) values (@message, @type_id);
 end;
 go

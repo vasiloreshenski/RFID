@@ -92,3 +92,29 @@ body {
 #app-layout {
     width: 100%;
 }
+
+.notification-success {
+    background-color: darkolivegreen;
+    color: white;
+}
+
+.notification-error {
+    background-color: crimson;
+    color: white;
+}
+
+.spinner {
+    width: 100%;
+    height: 100%;
+    position: absolute !important;
+    margin: auto;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1000;
+}
+
+.blur {
+    filter: blur(8px);
+}

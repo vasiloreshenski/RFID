@@ -33,8 +33,7 @@ export class StatUserListComponent implements OnInit {
       data => {
         this.users = [];
         this.users.push(...data);
-      },
-      error => console.log(error)
+      }
     );
   }
 }

@@ -8,6 +8,7 @@
     using Dapper;
     using RFID.REST.Areas.Administration.Models;
     using RFID.REST.Areas.Auth.Models;
+    using RFID.REST.Areas.Log.Models;
     using RFID.REST.Areas.Stat.Models;
     using RFID.REST.Models;
 
@@ -316,6 +317,11 @@
                 "stat.usp_insert_event",
                 new { @access_point_serial_number = accessPointSerialNumber, @tag_number = tagNumber }
             );
+        }
+
+        public async Task InsertClientLogAsync(String message, LogType type, IDbTransaction transaction)
+        {
+            await transaction.ExecuteStoreProcedureAsync("[log].[insert_client_log]", param: new { @message = message, @type_id = (int)type });
         }
 
 

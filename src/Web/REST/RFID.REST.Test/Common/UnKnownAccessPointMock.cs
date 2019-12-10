@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Text;
 
-    internal class UnKknownAccessPointMock
+    internal class UnKnownAccessPointMock
     {
         public String SerialNumber { get; set; }
     }

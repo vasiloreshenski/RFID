@@ -88,6 +88,9 @@ namespace RFID.REST
             services.AddSingleton<IPasswordHasher<AuthUser>>(authPasswordHasher);
             services.AddSingleton<Areas.Auth.Commands.CommandFactory>();
 
+            // log
+            services.AddSingleton<Areas.Log.Commands.CommandFactory>();
+
             // access control
             services.AddSingleton<Areas.AccessControl.Commands.CommandFactory>();
         }

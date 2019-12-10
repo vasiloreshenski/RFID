@@ -77,9 +77,9 @@
             };
         }
 
-        public static UnKknownAccessPointMock UnKnownAccessPoint(String serialNumber)
+        public static UnKnownAccessPointMock UnKnownAccessPoint(String serialNumber)
         {
-            return new UnKknownAccessPointMock { SerialNumber = serialNumber };
+            return new UnKnownAccessPointMock { SerialNumber = serialNumber };
         }
 
         public static UnKnownTagMock UnKnownTag(String number)

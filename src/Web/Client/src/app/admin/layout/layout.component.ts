@@ -1,3 +1,4 @@
+import { ProgressService } from './../../service/progress-service';
 import { NavigationService } from './../../service/navigation-service';
 import { Component, OnInit, HostBinding } from '@angular/core';
 
@@ -8,15 +9,19 @@ import { Component, OnInit, HostBinding } from '@angular/core';
 })
 export class LayoutComponent implements OnInit {
   @HostBinding('id') id = 'app-layout';
-  constructor(public navigationService: NavigationService) { }
+  constructor(public navigationService: NavigationService, private progressService: ProgressService) { }
 
   public Title: String;
+  public isLoading = true;
 
   ngOnInit() {
     this.navigationService.NavigatedEvent.subscribe(path => this.setTitleFromPath(path));
     // for cases when the user navigates direclty to the page
-    // and the router does not fire any events
     this.setTitleFromPath(this.navigationService.currentPath());
+    this.progressService.loading$.subscribe(value => {
+      this.isLoading = value;
+      console.log('is loading: ' + value);
+    });
   }
 
   private setTitleFromPath(path: String): void {

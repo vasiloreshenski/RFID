@@ -2,7 +2,7 @@ import { BearerHeaderHttpInterceptor } from './interceptor/bearer-header-http-in
 import { UnAuthorizedHttpInterceptor } from './interceptor/un-authorized-http-interceptor';
 import { AuthService } from 'src/app/service/auth-service';
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA, ErrorHandler } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -17,6 +17,8 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatTableModule } from '@angular/material/table';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatSnackBarModule, MAT_SNACK_BAR_DEFAULT_OPTIONS } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { AppComponent } from './app.component';
 import { LoginComponent } from './admin/login/login.component';
@@ -40,6 +42,9 @@ import { StatSummaryLayoutComponent } from './admin/stat/summary/stat-summary-la
 import { StatUserOverviewComponent } from './admin/stat/user/stat-user-overview/stat-user-overview.component';
 import { StatUserListComponent } from './admin/stat/user/stat-user-list/stat-user-list.component';
 import { StatUserChartsComponent } from './admin/stat/user/stat-user-charts/stat-user-charts.component';
+import { NotificationService } from './service/notification-service';
+import { GlobalErrorHandler } from './error/global-error-handler';
+import { ProgressService } from './service/progress-service';
 
 const routes: Routes = [
   { path: '', redirectTo: 'admin/login', pathMatch: 'full' },
@@ -97,18 +102,24 @@ const routes: Routes = [
     MatAutocompleteModule,
     MatTableModule,
     MatDatepickerModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    MatSnackBarModule,
+    MatProgressSpinnerModule
   ],
   providers: [
     { provide: LocationStrategy, useClass: HashLocationStrategy },
     { provide: HTTP_INTERCEPTORS, useClass: UnAuthorizedHttpInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: BearerHeaderHttpInterceptor, multi: true },
+    { provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: { duration: 2500, horizontalPosition: 'left', verticalPosition: 'top' } },
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
     RfidHttpClient,
     AuthService,
     AuthGuard,
     NavigationService,
     HtmlService,
-    DatePipe
+    DatePipe,
+    NotificationService,
+    ProgressService
   ],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]

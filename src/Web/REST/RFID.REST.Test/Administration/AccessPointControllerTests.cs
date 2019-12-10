@@ -133,7 +133,7 @@
                 }
             }
 
-            await assertDatabase.AssertCntAsync(userRM, accessPointRM);
+            await assertDatabase.AssertCntAsync(userRM, accessPointRM, new UnKnownTagMock { Number = "unknown" });
         }
 
         [Theory]

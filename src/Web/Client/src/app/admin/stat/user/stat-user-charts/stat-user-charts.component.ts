@@ -31,8 +31,7 @@ export class StatUserChartsComponent implements OnChanges {
           const tmp = data.map(x => ModelFactory.dateTimeAsWorkHourNormChartJson(x));
           this.workHourNormPerDays = [];
           this.workHourNormPerDays = [...tmp];
-        },
-        error => console.log(error)
+        }
       );
   }
 
@@ -50,7 +49,7 @@ export class StatUserChartsComponent implements OnChanges {
           'name': 'Exit',
           'series': exit.map(x => ModelFactory.dateTimeAsEntranceExitChartJson(x))
         });
-      }, error => console.log(error));
+      });
   }
 
   public formatMinutesAsTime(minutes: number) {

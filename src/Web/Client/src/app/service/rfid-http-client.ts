@@ -253,4 +253,10 @@ export class RfidHttpClient {
         const result$ = this.http.patch(url, { id: id }, { observe: 'response', headers: new HttpHeaders({ 'Content-Type': 'application/json' }) });
         return result$;
     }
+
+    public logClientError(message: String): Observable<HttpResponse<Object>> {
+        const url = new URL('/log/api/client/error', this.API_URL).href;
+        const result$ = this.http.post(url, { message: message }, { observe: 'response', headers: new HttpHeaders({ 'Content-Type': 'application/json' }) });
+        return result$;
+    }
 }

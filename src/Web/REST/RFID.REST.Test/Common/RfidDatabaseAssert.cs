@@ -16,7 +16,7 @@
             [typeof(RegisterTagRequestModel)] = RfidDatabase.GetAccessControlTagsCountAsync,
             [typeof(RegisterTagUserRequestModel)] = RfidDatabase.GetAccessControlUsersCountAsync,
             [typeof(RegisterAccessPointRequestModel)] = RfidDatabase.GetAccessPointsCountAsync,
-            [typeof(UnKknownAccessPointMock)] = RfidDatabase.GetUnKnownAccessPointCountsAsync,
+            [typeof(UnKnownAccessPointMock)] = RfidDatabase.GetUnKnownAccessPointCountsAsync,
             [typeof(UnKnownTagMock)] = RfidDatabase.GetUnknownTagCntAsync
         };
 

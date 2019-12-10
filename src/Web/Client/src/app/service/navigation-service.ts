@@ -1,5 +1,6 @@
 import { Injectable, EventEmitter } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd, NavigationStart } from '@angular/router';
+import { ProgressService } from './progress-service';
 
 @Injectable()
 export class NavigationService {
@@ -12,10 +13,12 @@ export class NavigationService {
 
     public NavigatedEvent: EventEmitter<String> = new EventEmitter<String>();
 
-    constructor(private router: Router) {
+    constructor(private router: Router, private progressService: ProgressService) {
         router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
                 this.NavigatedEvent.emit(this.currentPath());
+            } else if (e instanceof NavigationStart) {
+                this.progressService.startLoading();
             }
         });
     }

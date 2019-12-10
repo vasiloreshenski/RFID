@@ -9,11 +9,23 @@ import { StatUser } from 'src/app/model/stat-user';
 export class StatUserLayoutComponent implements OnInit {
 
   public selectedUser: StatUser;
+  public isOverviewLoading = true;
+  public isUserListLoading = true;
 
   constructor() { }
 
   public setSelectedUser(user: StatUser) {
     this.selectedUser = user;
+  }
+
+  public setIsOverviewLoading(value: boolean) {
+    console.log('overview loading: ' + value);
+    this.isOverviewLoading = value;
+  }
+
+  public setIsUserListLoading(value: boolean) {
+    console.log('user list loading: ' + value);
+    this.isUserListLoading = value;
   }
 
   ngOnInit() {

@@ -3,7 +3,8 @@
         <app-stat-user-overview></app-stat-user-overview>
     </div>
     <div>
-        <app-stat-user-list (selectedUserEvent)="setSelectedUser($event)"></app-stat-user-list>
+        <app-stat-user-list (selectedUserEvent)="setSelectedUser($event)">
+        </app-stat-user-list>
     </div>
     <div *ngIf="selectedUser">
         <app-stat-user-charts [user]="selectedUser"></app-stat-user-charts>

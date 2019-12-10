@@ -1,3 +1,6 @@
+import { ProgressService } from 'src/app/service/progress-service';
+import { startWith } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import { UnknownTag } from './../../../model/unknown-tag';
 import { RfidHttpClient } from './../../../service/rfid-http-client';
 import { Component, OnInit } from '@angular/core';
@@ -16,7 +19,9 @@ export class TagListComponent implements OnInit {
   public users: TagUser[] = [];
   public Title: String;
 
-  constructor(private rfidHttpClient: RfidHttpClient) {
+  constructor(
+    private rfidHttpClient: RfidHttpClient,
+    private progressService: ProgressService) {
 
   }
 
@@ -36,49 +41,41 @@ export class TagListComponent implements OnInit {
   public reloadActiveTags(): void {
     this.Title = 'Active';
     this.unknown = [];
-    this.rfidHttpClient.getActiveTags().subscribe(
-      data => {
-        this.tags = [];
-        this.tags.push(...data);
-      },
-      error => console.log(error)
-    );
+    const obs$ = this.rfidHttpClient.getActiveTags();
+    this.progressService.executeWithProgress(obs$, data => {
+      this.tags = [];
+      this.tags.push(...data);
+    });
   }
 
   public reloadInActiveTags(): void {
     this.Title = 'In-Active';
     this.unknown = [];
-    this.rfidHttpClient.getInActiveTags().subscribe(
-      data => {
-        this.tags = [];
-        this.tags.push(...data);
-      },
-      error => console.log(error)
-    );
+    const obs$ = this.rfidHttpClient.getInActiveTags();
+    this.progressService.executeWithProgress(obs$, data => {
+      this.tags = [];
+      this.tags.push(...data);
+    });
   }
 
   public reloadUnknownTags(): void {
     this.Title = 'Unknown';
     this.tags = [];
-    this.rfidHttpClient.getUnknownTags().subscribe(
-      data => {
-        this.unknown = [];
-        this.unknown.push(...data);
-      },
-      error => console.log(error)
-    );
+    const obs$ = this.rfidHttpClient.getUnknownTags();
+    this.progressService.executeWithProgress(obs$, data => {
+      this.unknown = [];
+      this.unknown.push(...data);
+    });
   }
 
   public reloadDeletedTags(): void {
     this.Title = 'Deleted';
     this.unknown = [];
-    this.rfidHttpClient.getDeletedTags().subscribe(
-      data => {
-        this.tags = [];
-        this.tags.push(...data);
-      },
-      error => console.log(error)
-    );
+    const obs$ = this.rfidHttpClient.getDeletedTags();
+    this.progressService.executeWithProgress(obs$, data => {
+      this.tags = [];
+      this.tags.push(...data);
+    });
   }
 
   private reloadUsers(): void {
@@ -86,9 +83,7 @@ export class TagListComponent implements OnInit {
       data => {
         this.users = [];
         this.users.push(...data);
-      },
-      error => console.log(error)
-    );
+      });
   }
 
   ngOnInit() {

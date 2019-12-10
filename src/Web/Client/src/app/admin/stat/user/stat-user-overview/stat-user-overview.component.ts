@@ -1,6 +1,7 @@
+import { ProgressService } from 'src/app/service/progress-service';
 import { StatUserOverview } from './../../../../model/stat-user-overview';
 import { RfidHttpClient } from './../../../../service/rfid-http-client';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-stat-user-overview',
@@ -12,7 +13,9 @@ export class StatUserOverviewComponent implements OnInit {
   public overview: StatUserOverview;
   public data: any[] = [];
 
-  constructor(private rfidHttpClient: RfidHttpClient) { }
+  constructor(
+    private rfidHttpClient: RfidHttpClient,
+    private progressService: ProgressService) { }
 
   ngOnInit() {
     this.overview = new StatUserOverview();
@@ -25,8 +28,8 @@ export class StatUserOverviewComponent implements OnInit {
           { 'name': 'Avg. exit time', 'value': response.avgExitTime.time },
           { 'name': 'Avg. work hour norm', 'value': response.avgWorkHourNorm.time }
         );
-      },
-      error => console.log(error)
+        this.progressService.stopLoading();
+      }
     );
   }
 }
