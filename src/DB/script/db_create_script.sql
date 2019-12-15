@@ -350,20 +350,12 @@ if object_id('administration.f_get_user', 'IF') is not null
 	drop function administration.f_get_user;
 go
 
-if object_id('access_control.f_get_active_access_points', 'IF') is not null
-	drop function access_control.f_get_active_access_points;
+if object_id('access_control.f_get_access_points', 'IF') is not null
+	drop function access_control.f_get_access_points;
 go
 
-if object_id('access_control.f_get_in_active_access_points', 'IF') is not null
-	drop function acesss_control.f_get_in_active_access_points;
-go
-
-if object_id('access_control.f_get_deleted_access_points', 'IF') is not null
-	drop function access_control.f_get_deleted_access_points;
-go
-
-if object_id('access_control.f_get_unknown_active_points', 'IF') is not null
-	drop function access_control.f_get_unknown_active_points;
+if object_id('access_control.f_get_unknown_access_points', 'IF') is not null
+	drop function access_control.f_get_unknown_access_points;
 go
 
 if object_id('access_control.f_get_active_tags', 'IF') is not null
@@ -500,11 +492,29 @@ return
 );
 go
 
-create function access_control.f_get_active_access_points()
+create function access_control.f_get_access_points(@page int, @page_size int, @is_active bit, @is_deleted bit)
 returns table
 as
 return
 (
+	with access_points
+	as
+	(
+		select
+			ap.Id,
+			ap.SerialNumber,
+			ap.[Description],
+			ap.LevelId,
+			ap.DirectionId,
+			ap.CreateDate,
+			ap.ModificationDate,
+			ap.IsActive,
+			ap.IsDeleted
+		from access_control.AccessPoints as ap
+		where iif(@is_active is null, 1, iif(@is_active = ap.IsActive, 1, 0)) = 1
+		and iif(@is_deleted is null, 1, iif(@is_deleted = ap.IsDeleted, 1, 0)) = 1
+	)
+
 	select
 		ap.Id,
 		ap.SerialNumber,
@@ -515,64 +525,44 @@ return
 		ap.ModificationDate,
 		ap.IsActive,
 		ap.IsDeleted
-	from access_control.AccessPoints as ap
-	where ap.IsActive = 1
-	and ap.IsDeleted = 0
+	from access_points as ap
+	order by ap.CreateDate
+	offset iif(@page is null or @page_size is null, 0, @page * @page_size) rows
+	fetch next iif(
+		@page_size is null,
+		iif(exists(select * from access_points), (select count(*) from access_points), 1),
+		iif(@page_size <= 0, 1, @page_size)
+	) rows only
 );
 go
 
-create function access_control.f_get_in_active_access_points()
+create function access_control.f_get_unknown_access_points(@page int, @page_size int)
 returns table
 as
 return
 (
-	select
-		ap.Id,
-		ap.SerialNumber,
-		ap.[Description],
-		ap.LevelId,
-		ap.DirectionId,
-		ap.CreateDate,
-		ap.ModificationDate,
-		ap.IsActive,
-		ap.IsDeleted
-	from access_control.AccessPoints as ap
-	where ap.IsActive = 0
-	and ap.IsDeleted = 0
-);
-go
+	with access_points
+	as
+	(
+		select
+			uap.Id,
+			uap.SerialNumber,
+			uap.AccessDate
+		from access_control.UnKnownAccessPoints as uap
+		where uap.IsDeleted = 0
+	)
 
-create function access_control.f_get_deleted_access_points()
-returns table
-as
-return
-(
-	select
-		ap.Id,
-		ap.SerialNumber,
-		ap.[Description],
-		ap.LevelId,
-		ap.DirectionId,
-		ap.CreateDate,
-		ap.ModificationDate,
-		ap.IsActive,
-		ap.IsDeleted
-	from access_control.AccessPoints as ap
-	where ap.IsDeleted = 1
-);
-go
-
-create function access_control.f_get_unknown_active_points()
-returns table
-as
-return
-(
 	select
 		uap.Id,
 		uap.SerialNumber,
 		uap.AccessDate
-	from access_control.UnKnownAccessPoints as uap
-	where uap.IsDeleted = 0
+	from access_points as uap
+	order by uap.AccessDate
+	offset iif(@page is null or @page_size is null, 0, @page * @page_size) rows
+	fetch next iif(@page_size is null, 
+		iif(exists(select * from access_points), (select count(*) from access_points), 1),
+		iif(@page_size <= 0, 1, @page_size)
+	) rows only
 );
 go
 

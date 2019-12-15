@@ -1,3 +1,4 @@
+import { Pagination } from './pagination';
 import { DateTime } from './date-time';
 import { StatUserOverview } from './stat-user-overview';
 import { RegisterTagRequestModel } from './register-tag-request-model';
@@ -13,6 +14,18 @@ import { AccessLevelType } from './access-level-type';
 import { AccessPoint } from './access-point';
 import { StatUser } from './stat-user';
 export class ModelFactory {
+
+    public static paginationFromJson<T>(json: any, func: (itemJson: any) => T): Pagination<T> {
+        const result = new Pagination<T>();
+        result.page = json.page;
+        result.pageSize = json.pageSize;
+        result.pagesCount = json.pagesCount;
+        result.count = json.count;
+        if (Array.isArray(json.items)) {
+            result.items = (json.items as any[]).map(func);
+        }
+        return result;
+    }
 
     public static accessPointFromJson(json: any): AccessPoint {
         const obj = new AccessPoint();

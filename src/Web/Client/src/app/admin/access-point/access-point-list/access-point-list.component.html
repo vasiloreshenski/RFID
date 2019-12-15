@@ -13,15 +13,28 @@
     </mat-sidenav>
     <mat-sidenav-content>
         <h2 mat-h2 class="text-center">{{Title}}</h2>
-        <ng-container *ngIf="accessPoints.length > 0">
-            <div *ngFor="let ap of accessPoints">
-                <app-access-point-item [accessPoint]="ap" (accessPointUpdate)="reloadAccessPoints()">
+        <ng-container *ngIf="accessPointsPaginator.items.length > 0">
+            <div class="pagination-container flex h-right">
+                <mat-paginator class="pagination" [length]="accessPointsPaginator.count"
+                    [pageSize]="accessPointsPaginator.pageSize" [pageIndex]="accessPointsPaginator.page" color="primary"
+                    (page)="reloadAccessPoints($event)">
+                </mat-paginator>
+            </div>
+            <div *ngFor="let ap of accessPointsPaginator.items">
+                <app-access-point-item [accessPoint]="ap" (accessPointUpdate)="reloadAccessPoints(null)">
                 </app-access-point-item>
             </div>
         </ng-container>
-        <ng-container *ngIf="unknownAccessPoints.length > 0">
-            <div *ngFor="let uap of unknownAccessPoints">
-                <app-unknown-access-point-item [unknownAccessPoint]="uap" (accessPointUpdate)="reloadAccessPoints()">
+        <ng-container *ngIf="unknownAccessPointsPaginator.items.length > 0">
+            <div class="pagination-container flex h-right">
+                <mat-paginator class="pagination" [length]="unknownAccessPointsPaginator.count"
+                    [pageSize]="unknownAccessPointsPaginator.pageSize" [pageIndex]="unknownAccessPointsPaginator.page" color="primary"
+                    (page)="reloadAccessPoints($event)">
+                </mat-paginator>
+            </div>
+            <div *ngFor="let uap of unknownAccessPointsPaginator.items">
+                <app-unknown-access-point-item [unknownAccessPoint]="uap"
+                    (accessPointUpdate)="reloadAccessPoints(null)">
                 </app-unknown-access-point-item>
             </div>
         </ng-container>

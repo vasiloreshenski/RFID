@@ -1,3 +1,5 @@
+import { AccessPoint } from './../model/access-point';
+import { Pagination } from './../model/pagination';
 import { environment } from './../../environments/environment';
 import { StatUserOverview } from './../model/stat-user-overview';
 import { RegisterTagRequestModel } from './../model/register-tag-request-model';
@@ -6,7 +8,6 @@ import { UpdateTagRequestModel } from './../model/update-tag-request-model';
 import { UnknownAccessPoint } from './../model/unknown-access-point';
 import { UpdateAccessPointRequestModel } from './../model/update-access-point-request-model';
 import { ModelFactory } from '../model/model-factory';
-import { AccessPoint } from '../model/access-point';
 import { Http, Response } from '@angular/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -48,37 +49,37 @@ export class RfidHttpClient {
         return this.http.post<AuthTokenResponseModel>(url, { email: email, password: password });
     }
 
-    public getActiveAccessPoints(): Observable<AccessPoint[]> {
-        const url = new URL('/administration/api/accesspoint/active', this.API_URL).href;
-        const result$ = this.http.get<AccessPoint[]>(url).pipe(
-            map(array => array.map(json => ModelFactory.accessPointFromJson(json)))
+    public getActiveAccessPoints(page: number, pageSize: number): Observable<Pagination<AccessPoint>> {
+        const url = new URL(`/administration/api/accesspoint/active?page=${page}&pageSize=${pageSize}`, this.API_URL).href;
+        const result$ = this.http.get<any>(url).pipe(
+            map(json => ModelFactory.paginationFromJson(json, ModelFactory.accessPointFromJson))
         );
 
         return result$;
     }
 
-    public getInActiveAccessPoints(): Observable<AccessPoint[]> {
-        const url = new URL('/administration/api/accesspoint/inactive', this.API_URL).href;
-        const result$ = this.http.get<AccessPoint[]>(url).pipe(
-            map(array => array.map(json => ModelFactory.accessPointFromJson(json)))
+    public getInActiveAccessPoints(page: number, pageSize: number): Observable<Pagination<AccessPoint>> {
+        const url = new URL(`/administration/api/accesspoint/inactive?page=${page}&pageSize=${pageSize}`, this.API_URL).href;
+        const result$ = this.http.get<any>(url).pipe(
+            map(json => ModelFactory.paginationFromJson(json, ModelFactory.accessPointFromJson))
         );
 
         return result$;
     }
 
-    public getInDeletedAccessPoints(): Observable<AccessPoint[]> {
-        const url = new URL('/administration/api/accesspoint/deleted', this.API_URL).href;
-        const result$ = this.http.get<AccessPoint[]>(url).pipe(
-            map(array => array.map(json => ModelFactory.accessPointFromJson(json)))
+    public getDeletedAccessPoints(page: number, pageSize: number): Observable<Pagination<AccessPoint>> {
+        const url = new URL(`/administration/api/accesspoint/deleted?page=${page}&pageSize=${pageSize}`, this.API_URL).href;
+        const result$ = this.http.get<any>(url).pipe(
+            map(json => ModelFactory.paginationFromJson(json, ModelFactory.accessPointFromJson))
         );
 
         return result$;
     }
 
-    public getUnknownAccessPoints(): Observable<UnknownAccessPoint[]> {
-        const url = new URL('/administration/api/accesspoint/unknown', this.API_URL).href;
-        const result$ = this.http.get<UnknownAccessPoint[]>(url).pipe(
-            map(array => array.map(json => ModelFactory.unknownAccessPointFromJson(json)))
+    public getUnknownAccessPoints(page: number, pageSize: number): Observable<Pagination<UnknownAccessPoint>> {
+        const url = new URL(`/administration/api/accesspoint/unknown?page=${page}&pageSize=${pageSize}`, this.API_URL).href;
+        const result$ = this.http.get<any>(url).pipe(
+            map(json => ModelFactory.paginationFromJson(json, ModelFactory.unknownAccessPointFromJson))
         );
 
         return result$;

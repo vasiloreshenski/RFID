@@ -325,74 +325,65 @@
         }
 
 
-        public async Task<IReadOnlyCollection<AccessPointResponseModel>> GetAllActiveAccessPointsAsync()
+        public async Task<int> GetActiveAccessPointsCountAsync()
         {
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
-                var dbResult = await connection.QueryAsync<AccessPointResponseModel>(@"
-                    select 
-                        x.Id, 
-                        x.SerialNumber, 
-                        x.Description, 
-                        x.LevelId as AccessLevel, 
-                        x.DirectionId as Direction, 
-                        x.CreateDate, 
-                        x.ModificationDate, 
-                        x.IsActive,
-                        x.IsDeleted
-                    from access_control.f_get_active_access_points() as x");
-
-                return dbResult.ToList();
+                var dbResult = await connection.ExecuteScalarAsync<int>(@"select count(*) from access_control.f_get_access_points(null, null, 1, 0) as x");
+                return dbResult;
             }
         }
 
-        public async Task<IReadOnlyCollection<AccessPointResponseModel>> GetAllInActiveAccessPointsAsync()
+        public async Task<int> GetInActiveAccessPointsCountAsync()
         {
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
-                var dbResult = await connection.QueryAsync<AccessPointResponseModel>(@"
-                    select 
-                        x.Id, 
-                        x.SerialNumber, 
-                        x.Description, 
-                        x.LevelId as AccessLevel, 
-                        x.DirectionId as Direction, 
-                        x.CreateDate, 
-                        x.ModificationDate, 
-                        x.IsActive,
-                        x.IsDeleted
-                    from access_control.f_get_in_active_access_points() as x");
-
-                return dbResult.ToList();
+                var dbResult = await connection.ExecuteScalarAsync<int>(@"select count(*) from access_control.f_get_access_points(null, null, 0, 0) as x");
+                return dbResult;
             }
         }
 
-        public async Task<IReadOnlyCollection<AccessPointResponseModel>> GetAllDeletedAccessPointsAsync()
+        public async Task<int> GetDeletedAccessPointsCountAsync()
         {
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
-                var dbResult = await connection.QueryAsync<AccessPointResponseModel>(@"
-                    select 
-                        x.Id, 
-                        x.SerialNumber, 
-                        x.Description, 
-                        x.LevelId as AccessLevel, 
-                        x.DirectionId as Direction, 
-                        x.CreateDate, 
-                        x.ModificationDate, 
-                        x.IsActive,
-                        x.IsDeleted
-                    from access_control.f_get_deleted_access_points() as x");
-
-                return dbResult.ToList();
+                var dbResult = await connection.ExecuteScalarAsync<int>(@"select count(*) from access_control.f_get_access_points(null, null, null, 1) as x");
+                return dbResult;
             }
         }
 
-        public async Task<IReadOnlyCollection<UnKnownAccessPointResponseModel>> GetAllUnKnownActiveAccessPointsAsync()
+        public async Task<int> GetUnknownAccessPointsCountAsync()
         {
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
-                var dbResult = await connection.QueryAsync<UnKnownAccessPointResponseModel>("select x.Id, x.SerialNumber, x.AccessDate from access_control.f_get_unknown_active_points() as x");
+                var dbResult = await connection.ExecuteScalarAsync<int>(@"select count(*) from access_control.f_get_unknown_access_points(null, null) as x");
+                return dbResult;
+            }
+        }
+
+        public Task<IReadOnlyCollection<AccessPointResponseModel>> GetActiveAccessPointsAsync(int? page, int? pageSize)
+        {
+            return this.GetAccessPointsInternal(page: page, pageSize: pageSize, isActive: true, isDeleted: false);
+        }
+
+        public Task<IReadOnlyCollection<AccessPointResponseModel>> GetInActiveAccessPointsAsync(int? page, int? pageSize)
+        {
+            return this.GetAccessPointsInternal(page: page, pageSize: pageSize, isActive: false, isDeleted: false);
+        }
+
+        public Task<IReadOnlyCollection<AccessPointResponseModel>> GetDeletedAccessPointsAsync(int? page, int? pageSize)
+        {
+            return this.GetAccessPointsInternal(page: page, pageSize: pageSize, isActive: null, isDeleted: true);
+        }
+
+        public async Task<IReadOnlyCollection<UnKnownAccessPointResponseModel>> GetUnKnownAccessPointsAsync(int? page, int? pageSize)
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var dbResult = await connection.QueryAsync<UnKnownAccessPointResponseModel>(
+                    "select x.Id, x.SerialNumber, x.AccessDate from access_control.f_get_unknown_access_points(@page, @page_size) as x", 
+                    param: new { @page = page, @page_size = pageSize }
+                );
 
                 return dbResult.ToList();
             }
@@ -602,6 +593,27 @@
         private async Task<String> GetTagNumberByIdAsync(int tagId, IDbTransaction transaction)
         {
             return await transaction.ExecuteScalarAsync<String>("select x.Number from access_control.Tags as x where x.Id=@tag_id", param: new { @tag_id = tagId });
+        }
+
+        private async Task<IReadOnlyCollection<AccessPointResponseModel>> GetAccessPointsInternal(int? page, int? pageSize, bool? isActive, bool? isDeleted)
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var dbResult = await connection.QueryAsync<AccessPointResponseModel>(@"
+                    select 
+                        x.Id, 
+                        x.SerialNumber, 
+                        x.Description, 
+                        x.LevelId as AccessLevel, 
+                        x.DirectionId as Direction, 
+                        x.CreateDate, 
+                        x.ModificationDate, 
+                        x.IsActive,
+                        x.IsDeleted
+                    from access_control.f_get_access_points(@page, @page_size, @is_active, @is_deleted) as x", param: new { @page = page, @page_size = pageSize, @is_active = isActive, @is_deleted = isDeleted });
+
+                return dbResult.ToList();
+            }
         }
 
         private SqlMapper.ICustomQueryParameter AsIntList(IReadOnlyCollection<int> values)

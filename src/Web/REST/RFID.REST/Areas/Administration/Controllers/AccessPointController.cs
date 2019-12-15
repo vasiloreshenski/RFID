@@ -169,27 +169,75 @@
         }
 
         [HttpGet("active")]
-        public async Task<IReadOnlyCollection<AccessPointResponseModel>> GetAllActiveAsync()
+        public async Task<IActionResult> GetAllActiveAsync(int? page, int? pageSize)
         {
-            return await this.database.GetAllActiveAccessPointsAsync();
+            var count = await this.database.GetActiveAccessPointsCountAsync();
+            var pages = (int)Math.Ceiling(((double)count) / ((double?)pageSize) ?? ((double)count));
+            var items = await this.database.GetActiveAccessPointsAsync(page, pageSize);
+            return this.Ok(
+                new
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    PagesCount = pages,
+                    Count = count,
+                    Items = items
+                }
+            );
         }
 
         [HttpGet("inactive")]
-        public async Task<IReadOnlyCollection<AccessPointResponseModel>> GetAllInActiveAsync()
+        public async Task<IActionResult> GetAllInActiveAsync(int? page, int? pageSize)
         {
-            return await this.database.GetAllInActiveAccessPointsAsync();
+            var count = await this.database.GetInActiveAccessPointsCountAsync();
+            var pages = (int)Math.Ceiling(((double)count) / ((double?)pageSize) ?? ((double)count));
+            var items = await this.database.GetInActiveAccessPointsAsync(page, pageSize);
+            return this.Ok(
+                new
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    PagesCount = pages,
+                    Count = count,
+                    Items = items
+                }
+            );
         }
 
         [HttpGet("deleted")]
-        public async Task<IReadOnlyCollection<AccessPointResponseModel>> GetAllDeletedAsync()
+        public async Task<IActionResult> GetAllDeletedAsync(int? page, int? pageSize)
         {
-            return await this.database.GetAllDeletedAccessPointsAsync();
+            var count = await this.database.GetDeletedAccessPointsCountAsync();
+            var pages = (int)Math.Ceiling(((double)count) / ((double?)pageSize) ?? ((double)count));
+            var items = await this.database.GetDeletedAccessPointsAsync(page, pageSize);
+            return this.Ok(
+                new
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    PagesCount = pages,
+                    Count = count,
+                    Items = items
+                }
+            );
         }
 
         [HttpGet("unknown")]
-        public async Task<IReadOnlyCollection<UnKnownAccessPointResponseModel>> GetAllUnKnownAsync()
+        public async Task<IActionResult> GetAllUnKnownAsync(int? page, int? pageSize)
         {
-            return await this.database.GetAllUnKnownActiveAccessPointsAsync();
+            var count = await this.database.GetUnknownAccessPointsCountAsync();
+            var pages = (int)Math.Ceiling(((double)count) / ((double?)pageSize) ?? ((double)count));
+            var items = await this.database.GetUnKnownAccessPointsAsync(page, pageSize);
+            return this.Ok(
+                new
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    PagesCount = pages,
+                    Count = count,
+                    Items = items
+                }
+            );
         }
     }
 }

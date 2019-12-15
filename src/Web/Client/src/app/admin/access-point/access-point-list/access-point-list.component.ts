@@ -1,3 +1,4 @@
+import { Pagination } from './../../../model/pagination';
 import { Observable } from 'rxjs';
 import { UnknownAccessPoint } from '../../../model/unknown-access-point';
 import { NavigationService } from '../../../service/navigation-service';
@@ -8,6 +9,7 @@ import { RfidHttpClient } from '../../../service/rfid-http-client';
 import { AccessPoint } from '../../../model/access-point';
 import { Component, OnInit, Output, AfterViewInit, ViewChildren, QueryList, EventEmitter } from '@angular/core';
 import { ProgressService } from 'src/app/service/progress-service';
+import { PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-access-point-list',
@@ -16,70 +18,98 @@ import { ProgressService } from 'src/app/service/progress-service';
 })
 export class AccessPointListComponent implements OnInit, AfterViewInit {
   public Title: string;
-  public accessPoints: AccessPoint[] = [];
-  public unknownAccessPoints: UnknownAccessPoint[] = [];
+  public accessPointsPaginator: Pagination<AccessPoint> = Pagination.empty();
+  public unknownAccessPointsPaginator: Pagination<UnknownAccessPoint> = Pagination.empty();
 
   constructor(
     private rfidHttpClient: RfidHttpClient,
-    private navigationService: NavigationService,
     private progressService: ProgressService) { }
 
-  public reloadAccessPoints(): void {
-    if (this.accessPoints.some(x => x.isDeleted)) {
-      this.reloadDeletedAccessPoints();
-    } else if (this.accessPoints.some(x => x.isActive)) {
-      this.reloadActiveAccessPoints();
-    } else if (this.accessPoints.length > 0) {
-      this.reloadInActiveAccessPoints();
-    } else if (this.unknownAccessPoints.length > 0) {
-      this.reloadUnKnownAccessPoints();
+  public reloadAccessPoints(ev: PageEvent): void {
+    if (!ev) {
+      ev = new PageEvent();
+      ev.pageIndex = Pagination.defaultPage;
+      ev.pageSize = Pagination.defaultPageSize;
+    }
+    if (this.accessPointsPaginator.items.some(x => x.isDeleted)) {
+      this.reloadDeletedAccessPoints(ev.pageIndex, ev.pageSize);
+    } else if (this.accessPointsPaginator.items.some(x => x.isActive)) {
+      this.reloadActiveAccessPoints(ev.pageIndex, ev.pageSize);
+    } else if (this.accessPointsPaginator.items.length > 0) {
+      this.reloadInActiveAccessPoints(ev.pageIndex, ev.pageSize);
+    } else if (this.unknownAccessPointsPaginator.items.length > 0) {
+      this.reloadUnKnownAccessPoints(ev.pageIndex, ev.pageSize);
     } else {
-      this.reloadActiveAccessPoints();
+      this.reloadActiveAccessPoints(ev.pageIndex, ev.pageSize);
     }
   }
 
-  public reloadActiveAccessPoints(): void {
-    this.unknownAccessPoints = [];
+  public reloadActiveAccessPoints(page: number, pageSize: number): void {
+    if (!page) {
+      page = Pagination.defaultPage;
+    }
+    if (!pageSize) {
+      pageSize = Pagination.defaultPageSize;
+    }
+
+    this.unknownAccessPointsPaginator = Pagination.empty();
     this.Title = 'Active';
-    const obs$ = this.rfidHttpClient.getActiveAccessPoints();
+    const obs$ = this.rfidHttpClient.getActiveAccessPoints(page, pageSize);
     this.progressService.executeWithProgress(obs$, data => {
-      this.accessPoints = [];
-      this.accessPoints.push(...data);
+      this.accessPointsPaginator = data;
     });
   }
 
-  public reloadInActiveAccessPoints(): void {
-    this.unknownAccessPoints = [];
+  public reloadInActiveAccessPoints(page: number, pageSize: number): void {
+    if (!page) {
+      page = Pagination.defaultPage;
+    }
+    if (!pageSize) {
+      pageSize = Pagination.defaultPageSize;
+    }
+
+    this.unknownAccessPointsPaginator = Pagination.empty();
     this.Title = 'In-Active';
-    const obs$ = this.rfidHttpClient.getInActiveAccessPoints();
+    const obs$ = this.rfidHttpClient.getInActiveAccessPoints(page, pageSize);
     this.progressService.executeWithProgress(obs$, data => {
-      this.accessPoints = [];
-      this.accessPoints.push(...data);
+      this.accessPointsPaginator = data;
     });
   }
 
-  public reloadDeletedAccessPoints(): void {
-    this.unknownAccessPoints = [];
+  public reloadDeletedAccessPoints(page: number, pageSize: number): void {
+    if (!page) {
+      page = Pagination.defaultPage;
+    }
+    if (!pageSize) {
+      pageSize = Pagination.defaultPageSize;
+    }
+
+    this.unknownAccessPointsPaginator = Pagination.empty();
     this.Title = 'Deleted';
-    const obs$ = this.rfidHttpClient.getInDeletedAccessPoints();
+    const obs$ = this.rfidHttpClient.getDeletedAccessPoints(page, pageSize);
     this.progressService.executeWithProgress(obs$, data => {
-      this.accessPoints = [];
-      this.accessPoints.push(...data);
+      this.accessPointsPaginator = data;
     });
   }
 
-  public reloadUnKnownAccessPoints(): void {
+  public reloadUnKnownAccessPoints(page: number, pageSize: number): void {
+    if (!page) {
+      page = Pagination.defaultPage;
+    }
+    if (!pageSize) {
+      pageSize = Pagination.defaultPageSize;
+    }
+
     this.Title = 'Unknown';
-    this.accessPoints = [];
-    const obs$ = this.rfidHttpClient.getUnknownAccessPoints();
+    this.accessPointsPaginator = Pagination.empty();
+    const obs$ = this.rfidHttpClient.getUnknownAccessPoints(page, pageSize);
     this.progressService.executeWithProgress(obs$, data => {
-      this.unknownAccessPoints = [];
-      this.unknownAccessPoints.push(...data);
+      this.unknownAccessPointsPaginator = data;
     });
   }
 
   ngOnInit() {
-    this.reloadAccessPoints();
+    this.reloadAccessPoints(null);
   }
 
   ngAfterViewInit(): void {

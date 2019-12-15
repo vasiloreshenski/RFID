@@ -24,7 +24,7 @@ export class GlobalErrorHandler implements ErrorHandler {
         const msg = error.message ? error.message : error.toString();
         const response$ = this.httpClient.logClientError(msg);
         // triger execution
-        response$.subscribe(data => console.log(data));
+        response$.subscribe(data => {});
         throw error;
     }
 }
