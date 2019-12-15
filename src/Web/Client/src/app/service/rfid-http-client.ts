@@ -85,28 +85,30 @@ export class RfidHttpClient {
         return result$;
     }
 
-    public getActiveTags(): Observable<Tag[]> {
-        const url = new URL('/administration/api/tags/active', this.API_URL).href;
-        const result$ = this.http.get<Tag[]>(url).pipe(
-            map(data => data.map(json => ModelFactory.tagFromJson(json)))
+    public getActiveTags(page: number, pageSize: number): Observable<Pagination<Tag>> {
+        const url = new URL(`/administration/api/tags/active?page=${page}&pageSize=${pageSize}`, this.API_URL).href;
+        const result$ = this.http.get<any>(url).pipe(
+            map(json => ModelFactory.paginationFromJson(json, ModelFactory.tagFromJson))
         );
 
         return result$;
     }
 
-    public getInActiveTags(): Observable<Tag[]> {
-        const url = new URL('/administration/api/tags/inactive', this.API_URL).href;
-        const result$ = this.http.get<Tag[]>(url).pipe(
-            map(data => data.map(json => ModelFactory.tagFromJson(json)))
+    public getInActiveTags(page: number, pageSize: number): Observable<Pagination<Tag>> {
+        const url = new URL(`/administration/api/tags/inactive?page=${page}&pageSize=${pageSize}`, this.API_URL).href;
+        const result$ = this.http.get<any>(url).pipe(
+            map(json => ModelFactory.paginationFromJson(json, ModelFactory.tagFromJson))
         );
+
         return result$;
     }
 
-    public getDeletedTags(): Observable<Tag[]> {
-        const url = new URL('/administration/api/tags/deleted', this.API_URL).href;
-        const result$ = this.http.get<Tag[]>(url).pipe(
-            map(data => data.map(json => ModelFactory.tagFromJson(json)))
+    public getDeletedTags(page: number, pageSize: number): Observable<Pagination<Tag>> {
+        const url = new URL(`/administration/api/tags/deleted?page=${page}&pageSize=${pageSize}`, this.API_URL).href;
+        const result$ = this.http.get<any>(url).pipe(
+            map(json => ModelFactory.paginationFromJson(json, ModelFactory.tagFromJson))
         );
+
         return result$;
     }
 
@@ -118,10 +120,10 @@ export class RfidHttpClient {
         return result$;
     }
 
-    public getUnknownTags(): Observable<UnknownTag[]> {
-        const url = new URL('/administration/api/tags/unknown', this.API_URL).href;
-        const result$ = this.http.get<Tag[]>(url).pipe(
-            map(data => data.map(json => ModelFactory.unknownTagFromJson(json)))
+    public getUnknownTags(page: number, pageSize: number): Observable<Pagination<UnknownTag>> {
+        const url = new URL(`/administration/api/tags/unknown?page=${page}&pageSize=${pageSize}`, this.API_URL).href;
+        const result$ = this.http.get<any>(url).pipe(
+            map(json => ModelFactory.paginationFromJson(json, ModelFactory.unknownTagFromJson))
         );
         return result$;
     }

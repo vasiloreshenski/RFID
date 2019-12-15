@@ -363,17 +363,17 @@
 
         public Task<IReadOnlyCollection<AccessPointResponseModel>> GetActiveAccessPointsAsync(int? page, int? pageSize)
         {
-            return this.GetAccessPointsInternal(page: page, pageSize: pageSize, isActive: true, isDeleted: false);
+            return this.GetAccessPointsInternalAsync(page: page, pageSize: pageSize, isActive: true, isDeleted: false);
         }
 
         public Task<IReadOnlyCollection<AccessPointResponseModel>> GetInActiveAccessPointsAsync(int? page, int? pageSize)
         {
-            return this.GetAccessPointsInternal(page: page, pageSize: pageSize, isActive: false, isDeleted: false);
+            return this.GetAccessPointsInternalAsync(page: page, pageSize: pageSize, isActive: false, isDeleted: false);
         }
 
         public Task<IReadOnlyCollection<AccessPointResponseModel>> GetDeletedAccessPointsAsync(int? page, int? pageSize)
         {
-            return this.GetAccessPointsInternal(page: page, pageSize: pageSize, isActive: null, isDeleted: true);
+            return this.GetAccessPointsInternalAsync(page: page, pageSize: pageSize, isActive: null, isDeleted: true);
         }
 
         public async Task<IReadOnlyCollection<UnKnownAccessPointResponseModel>> GetUnKnownAccessPointsAsync(int? page, int? pageSize)
@@ -381,7 +381,7 @@
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
                 var dbResult = await connection.QueryAsync<UnKnownAccessPointResponseModel>(
-                    "select x.Id, x.SerialNumber, x.AccessDate from access_control.f_get_unknown_access_points(@page, @page_size) as x", 
+                    "select x.Id, x.SerialNumber, x.AccessDate from access_control.f_get_unknown_access_points(@page, @page_size) as x",
                     param: new { @page = page, @page_size = pageSize }
                 );
 
@@ -389,70 +389,55 @@
             }
         }
 
-        public async Task<IReadOnlyCollection<TagResponseModel>> GetAllActiveTagsAsync()
+        public async Task<int> GetActiveTagsCountAsync()
         {
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
-                var dbResult = await connection.QueryAsync<TagResponseModel>(@"
-                    select
-                        x.Id,
-                        x.IsActive,
-                        x.IsDeleted,
-                        x.LevelId as AccessLevel,
-                        x.CreateDate,
-                        x.ModificationDate,
-                        x.Number,
-                        x.UserName
-                    from access_control.f_get_active_tags() as x
-                ");
-
-                return dbResult.ToList();
+                return await connection.ExecuteScalarAsync<int>("select count(*) from access_control.f_get_tags(null, null, 1, 0)");
             }
         }
 
-        public async Task<IReadOnlyCollection<TagResponseModel>> GetAllInActiveTagsAsync()
+        public async Task<int> GetInActiveTagsCountAsync()
         {
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
-                var dbResult = await connection.QueryAsync<TagResponseModel>(@"
-                    select
-                        x.Id,
-                        x.IsActive,
-                        x.IsDeleted,
-                        x.LevelId as AccessLevel,
-                        x.CreateDate,
-                        x.ModificationDate,
-                        x.Number,
-                        x.UserName
-                    from access_control.f_get_not_active_tags() as x
-                ");
-
-                return dbResult.ToList();
+                return await connection.ExecuteScalarAsync<int>("select count(*) from access_control.f_get_tags(null, null, 0, 0)");
             }
         }
 
-        public async Task<IReadOnlyCollection<TagResponseModel>> GetAllDeletedTagsAsync()
+        public async Task<int> GetDeletedTagsCountAsync()
         {
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
-                var dbResult = await connection.QueryAsync<TagResponseModel>(@"
-                    select
-                        x.Id,
-                        x.IsActive,
-                        x.IsDeleted,
-                        x.LevelId as AccessLevel,
-                        x.CreateDate,
-                        x.ModificationDate,
-                        x.Number,
-                        x.UserName
-                    from access_control.f_get_deleted_tags() as x
-                ");
-
-                return dbResult.ToList();
+                return await connection.ExecuteScalarAsync<int>("select count(*) from access_control.f_get_tags(null, null, null, 1)");
             }
         }
 
-        public async Task<IReadOnlyCollection<UserResponseModel>> GetAllTagsUsersAsync()
+        public async Task<int> GetUnknownTagsCountAsync()
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                return await connection.ExecuteScalarAsync<int>("select count(*) from access_control.f_get_unknown_tags(null, null)");
+            }
+        }
+
+
+        public Task<IReadOnlyCollection<TagResponseModel>> GetActiveTagsAsync(int? page, int? pageSize)
+        {
+            return this.GetTagsInternalAsync(page, pageSize, true, false);
+        }
+
+        public Task<IReadOnlyCollection<TagResponseModel>> GetInActiveTagsAsync(int? page, int? pageSize)
+        {
+            return this.GetTagsInternalAsync(page, pageSize, false, false);
+        }
+
+        public Task<IReadOnlyCollection<TagResponseModel>> GetDeletedTagsAsync(int? page, int? pageSize)
+        {
+            return this.GetTagsInternalAsync(page, pageSize, null, true);
+        }
+
+        public async Task<IReadOnlyCollection<UserResponseModel>> GetTagsUsersAsync()
         {
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
@@ -462,11 +447,15 @@
             }
         }
 
-        public async Task<IReadOnlyCollection<UnKnownTagResponseModel>> GetAllUnKnownActiveTagsAsync()
+        public async Task<IReadOnlyCollection<UnKnownTagResponseModel>> GetUnKnownTagsAsync(int? page, int? pageSize)
         {
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
-                var dbResult = await connection.QueryAsync<UnKnownTagResponseModel>("select x.Id, x.AccessDate, x.Number from access_control.f_get_unknown_active_tags() as x");
+                var dbResult = await connection.QueryAsync<UnKnownTagResponseModel>(
+                    "select x.Id, x.AccessDate, x.Number from access_control.f_get_unknown_tags(@page, @page_size) as x",
+                    param: new { @page = page, @page_size = pageSize }
+                );
+
                 return dbResult.ToList();
             }
         }
@@ -595,7 +584,7 @@
             return await transaction.ExecuteScalarAsync<String>("select x.Number from access_control.Tags as x where x.Id=@tag_id", param: new { @tag_id = tagId });
         }
 
-        private async Task<IReadOnlyCollection<AccessPointResponseModel>> GetAccessPointsInternal(int? page, int? pageSize, bool? isActive, bool? isDeleted)
+        private async Task<IReadOnlyCollection<AccessPointResponseModel>> GetAccessPointsInternalAsync(int? page, int? pageSize, bool? isActive, bool? isDeleted)
         {
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
@@ -611,6 +600,27 @@
                         x.IsActive,
                         x.IsDeleted
                     from access_control.f_get_access_points(@page, @page_size, @is_active, @is_deleted) as x", param: new { @page = page, @page_size = pageSize, @is_active = isActive, @is_deleted = isDeleted });
+
+                return dbResult.ToList();
+            }
+        }
+
+        private async Task<IReadOnlyCollection<TagResponseModel>> GetTagsInternalAsync(int? page, int? pageSize, bool? isActive, bool? isDeleted)
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var dbResult = await connection.QueryAsync<TagResponseModel>(@"
+                    select
+                        x.Id,
+                        x.IsActive,
+                        x.IsDeleted,
+                        x.LevelId as AccessLevel,
+                        x.CreateDate,
+                        x.ModificationDate,
+                        x.Number,
+                        x.UserName
+                    from access_control.f_get_tags(@page, @page_size, @is_active, @is_deleted) as x",
+                    param: new { @page = page, @page_size = pageSize, @is_active = isActive, @is_deleted = isDeleted });
 
                 return dbResult.ToList();
             }

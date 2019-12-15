@@ -2,24 +2,34 @@
     <mat-sidenav mode="side" opened>
         <mat-nav-list id="nav-list" class="flex v-center">
             <a mat-list-item mat-stroked-button color="primary" class="button-nav"
-                (click)="reloadActiveTags()">Active</a>
+                (click)="reloadActiveTags(null, null)">Active</a>
             <a mat-list-item mat-stroked-button color="primary" class="button-nav"
-                (click)="reloadInActiveTags()">In-Active</a>
+                (click)="reloadInActiveTags(null, null)">In-Active</a>
             <a mat-list-item mat-stroked-button color="primary" class="button-nav"
-                (click)="reloadUnknownTags()">Unknown</a>
+                (click)="reloadUnknownTags(null, null)">Unknown</a>
             <a mat-list-item mat-stroked-button color="primary" class="button-nav"
-                (click)="reloadDeletedTags()">Deleted</a>
+                (click)="reloadDeletedTags(null, null)">Deleted</a>
         </mat-nav-list>
     </mat-sidenav>
     <mat-sidenav-content>
         <h2 mat-h2 class="text-center">{{Title}}</h2>
-        <ng-container *ngIf="tags.length > 0">
-            <div *ngFor="let t of tags">
+        <ng-container *ngIf="tagPaginatior.items.length > 0">
+            <div class="pagination-container flex h-right">
+                <mat-paginator class="pagination" [length]="tagPaginatior.count" [pageSize]="tagPaginatior.pageSize"
+                    [pageIndex]="tagPaginatior.page" color="primary" (page)="reload($event)">
+                </mat-paginator>
+            </div>
+            <div *ngFor="let t of tagPaginatior.items">
                 <app-tag-item [tag]="t" [users]="users" (tagUpdateEvent)="reload()"></app-tag-item>
             </div>
         </ng-container>
-        <ng-container *ngIf="unknown.length > 0">
-            <div *ngFor="let ut of unknown">
+        <ng-container *ngIf="unknownPaginator.items.length > 0">
+            <div class="pagination-container flex h-right">
+                <mat-paginator class="pagination" [length]="unknownPaginator.count" [pageSize]="unknownPaginator.pageSize"
+                    [pageIndex]="unknownPaginator.page" color="primary" (page)="reload($event)">
+                </mat-paginator>
+            </div>
+            <div *ngFor="let ut of unknownPaginator.items">
                 <app-unknown-tag-item [unknownTag]="ut" (tagUpdateEvent)="reload()"></app-unknown-tag-item>
             </div>
         </ng-container>

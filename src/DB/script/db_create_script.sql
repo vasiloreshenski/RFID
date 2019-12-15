@@ -358,12 +358,8 @@ if object_id('access_control.f_get_unknown_access_points', 'IF') is not null
 	drop function access_control.f_get_unknown_access_points;
 go
 
-if object_id('access_control.f_get_active_tags', 'IF') is not null
-	drop function access_control.f_get_active_tags;
-go
-
-if object_id('access_control.f_get_not_active_tags', 'IF') is not null
-	drop function access_control.f_get_not_active_tags;
+if object_id('access_control.f_get_tags', 'IF') is not null
+	drop function access_control.f_get_tags;
 go
 
 if object_id('access_control.f_get_users', 'IF') is not null
@@ -566,11 +562,29 @@ return
 );
 go
 
-create function access_control.f_get_active_tags()
+create function access_control.f_get_tags(@page int, @page_size int, @is_active bit, @is_deleted bit)
 returns table
 as
 return
 (
+	with tags
+	as
+	(
+		select
+			t.Id,
+			t.CreateDate,
+			t.IsActive,
+			t.IsDeleted,
+			t.LevelId,
+			t.ModificationDate,
+			t.Number,
+			u.[Name] as [UserName]
+		from access_control.Tags as t
+		join access_control.Users as u on t.UserId = u.Id
+		where (iif(@is_active is null, 1, iif(@is_active = t.isActive, 1, 0))) = 1
+		and (iif(@is_deleted is null, 1, iif(@is_deleted = t.IsDeleted, 1, 0))) = 1
+	)
+
 	select
 		t.Id,
 		t.CreateDate,
@@ -579,68 +593,45 @@ return
 		t.LevelId,
 		t.ModificationDate,
 		t.Number,
-		u.[Name] as [UserName]
-	from access_control.Tags as t
-	join access_control.Users as u on t.UserId = u.Id
-	where t.IsActive = 1
-	and t.IsDeleted = 0
+		t.UserName as [UserName]
+	from tags as t
+	order by t.CreateDate
+	offset (iif(@page is null or @page_size is null, 0, @page * @page_size)) rows
+	fetch next iif(@page_size is null,
+			iif(exists(select * from tags), (select count(*) from tags), 1),
+			iif(@page_size <= 0, 1, @page_size)
+	) rows only
 );
 go
 
-create function access_control.f_get_not_active_tags()
+create function access_control.f_get_unknown_tags(@page int, @page_size int)
 returns table
 as
 return
 (
-	select
-		t.Id,
-		t.CreateDate,
-		t.IsActive,
-		t.IsDeleted,
-		t.LevelId,
-		t.ModificationDate,
-		t.Number,
-		u.[Name] as [UserName]
-	from access_control.Tags as t
-	join access_control.Users as u on t.UserId = u.Id
-	where t.IsActive = 0
-	and t.IsDeleted = 0
-);
-go
+	with tags
+	as
+	(
+		select
+			x.Id,
+			x.AccessDate,
+			x.Number
+		from access_control.UnknownTags as x
+		where x.IsDeleted = 0
+	)
 
-create function access_control.f_get_unknown_active_tags()
-returns table
-as
-return
-(
 	select
 		x.Id,
 		x.AccessDate,
 		x.Number
-	from access_control.UnknownTags as x
-	where x.IsDeleted = 0
-
+	from tags as x
+	order by x.AccessDate
+	offset (iif(@page is null or @page_size is null, 0, @page * @page_size)) rows
+	fetch next iif(@page_size is null, 
+		iif(exists(select * from tags), (select count(*) from tags), 1),
+		iif(@page_size <= 0, 1, @page_size)
+	) rows only
 );
-go
-
-create function access_control.f_get_deleted_tags()
-returns table
-as
-return
-(
-	select
-		t.Id,
-		t.CreateDate,
-		t.IsActive,
-		t.IsDeleted,
-		t.LevelId,
-		t.ModificationDate,
-		t.Number,
-		u.[Name] as [UserName]
-	from access_control.Tags as t
-	join access_control.Users as u on t.UserId = u.Id
-	where t.IsDeleted = 1
-)
 go
 
 create function access_control.f_get_users()

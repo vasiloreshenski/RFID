@@ -169,35 +169,82 @@
         }
 
         [HttpGet("active")]
-        public async Task<IActionResult> GetAllActiveAsync()
+        public async Task<IActionResult> GetAllActiveAsync(int? page, int? pageSize)
         {
-            return this.Ok(await this.database.GetAllActiveTagsAsync());
+            var count = await this.database.GetActiveTagsCountAsync();
+            var pages = (int)Math.Ceiling(((double)count) / ((double?)pageSize) ?? ((double)count));
+            var items = await this.database.GetActiveTagsAsync(page, pageSize);
+            return this.Ok(
+                new
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    PagesCount = pages,
+                    Count = count,
+                    Items = items
+                }
+            );
         }
 
         [HttpGet("inactive")]
-        public async Task<IActionResult> GetAllInActiveAsync()
+        public async Task<IActionResult> GetAllInActiveAsync(int? page, int? pageSize)
         {
-            return this.Ok(await this.database.GetAllInActiveTagsAsync());
+            var count = await this.database.GetInActiveTagsCountAsync();
+            var pages = (int)Math.Ceiling(((double)count) / ((double?)pageSize) ?? ((double)count));
+            var items = await this.database.GetInActiveTagsAsync(page, pageSize);
+            return this.Ok(
+                new
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    PagesCount = pages,
+                    Count = count,
+                    Items = items
+                }
+            );
         }
 
         [HttpGet("users")]
         public async Task<IActionResult> GetAllUsersAsync()
         {
-            var users = await this.database.GetAllTagsUsersAsync();
+            var users = await this.database.GetTagsUsersAsync();
             return this.Ok(users);
         }
 
         [HttpGet("unknown")]
-        public async Task<IActionResult> GetAllUnKnownTagsAsync()
+        public async Task<IActionResult> GetAllUnKnownTagsAsync(int? page, int? pageSize)
         {
-            var unknown = await this.database.GetAllUnKnownActiveTagsAsync();
-            return this.Ok(unknown);
+            var count = await this.database.GetUnknownTagsCountAsync();
+            var pages = (int)Math.Ceiling(((double)count) / ((double?)pageSize) ?? ((double)count));
+            var items = await this.database.GetUnKnownTagsAsync(page, pageSize);
+            return this.Ok(
+                new
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    PagesCount = pages,
+                    Count = count,
+                    Items = items
+                }
+            );
         }
 
         [HttpGet("deleted")]
-        public async Task<IActionResult> GetAllDeletedTagsAsync()
+        public async Task<IActionResult> GetAllDeletedTagsAsync(int? page, int? pageSize)
         {
-            return this.Ok(await this.database.GetAllDeletedTagsAsync());
+            var count = await this.database.GetDeletedTagsCountAsync();
+            var pages = (int)Math.Ceiling(((double)count) / ((double?)pageSize) ?? ((double)count));
+            var items = await this.database.GetDeletedTagsAsync(page, pageSize);
+            return this.Ok(
+                new
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    PagesCount = pages,
+                    Count = count,
+                    Items = items
+                }
+            );
         }
     }
 }

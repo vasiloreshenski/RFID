@@ -1,3 +1,5 @@
+import { PageEvent } from '@angular/material/paginator';
+import { Pagination } from './../../../model/pagination';
 import { ProgressService } from 'src/app/service/progress-service';
 import { startWith } from 'rxjs/operators';
 import { Observable } from 'rxjs';
@@ -13,9 +15,8 @@ import { TagUser } from 'src/app/model/tag-user';
   styleUrls: ['./tag-list.component.css']
 })
 export class TagListComponent implements OnInit {
-  public tags: Tag[] = [];
-  // public inActive: Tag[] = [];
-  public unknown: UnknownTag[] = [];
+  public tagPaginatior: Pagination<Tag> = Pagination.empty();
+  public unknownPaginator: Pagination<UnknownTag> = Pagination.empty();
   public users: TagUser[] = [];
   public Title: String;
 
@@ -25,56 +26,89 @@ export class TagListComponent implements OnInit {
 
   }
 
-  public reload(): void {
-    if (this.tags.some(t => t.isDeleted)) {
-      this.reloadDeletedTags();
-    } else if (this.tags.some(t => t.isActive === false)) {
-      this.reloadInActiveTags();
-    } else if (this.unknown.length > 0) {
-      this.reloadUnknownTags();
+  public reload(ev: PageEvent): void {
+    if (!ev) {
+      ev = new PageEvent();
+      ev.pageIndex = Pagination.defaultPage;
+      ev.pageSize = Pagination.defaultPageSize;
+    }
+    if (this.tagPaginatior.items.some(t => t.isDeleted)) {
+      this.reloadDeletedTags(ev.pageIndex, ev.pageSize);
+    } else if (this.tagPaginatior.items.some(t => t.isActive === false)) {
+      this.reloadInActiveTags(ev.pageIndex, ev.pageSize);
+    } else if (this.unknownPaginator.items.length > 0) {
+      this.reloadUnknownTags(ev.pageIndex, ev.pageSize);
     } else {
-      this.reloadActiveTags();
+      this.reloadActiveTags(ev.pageIndex, ev.pageSize);
     }
     this.reloadUsers();
   }
 
-  public reloadActiveTags(): void {
+  public reloadActiveTags(page: number, pageSize: number): void {
+    if (!page) {
+      page = Pagination.defaultPage;
+    }
+
+    if (!pageSize) {
+      pageSize = Pagination.defaultPageSize;
+    }
+
     this.Title = 'Active';
-    this.unknown = [];
-    const obs$ = this.rfidHttpClient.getActiveTags();
+    this.unknownPaginator = Pagination.empty();
+    const obs$ = this.rfidHttpClient.getActiveTags(page, pageSize);
     this.progressService.executeWithProgress(obs$, data => {
-      this.tags = [];
-      this.tags.push(...data);
+      this.tagPaginatior = data;
     });
   }
 
-  public reloadInActiveTags(): void {
+  public reloadInActiveTags(page: number, pageSize: number): void {
+    if (!page) {
+      page = Pagination.defaultPage;
+    }
+
+    if (!pageSize) {
+      pageSize = Pagination.defaultPageSize;
+    }
+
     this.Title = 'In-Active';
-    this.unknown = [];
-    const obs$ = this.rfidHttpClient.getInActiveTags();
+    this.unknownPaginator = Pagination.empty();
+    const obs$ = this.rfidHttpClient.getInActiveTags(page, pageSize);
     this.progressService.executeWithProgress(obs$, data => {
-      this.tags = [];
-      this.tags.push(...data);
+      this.tagPaginatior = data;
     });
   }
 
-  public reloadUnknownTags(): void {
+  public reloadUnknownTags(page: number, pageSize: number): void {
+    if (!page) {
+      page = Pagination.defaultPage;
+    }
+
+    if (!pageSize) {
+      pageSize = Pagination.defaultPageSize;
+    }
+
     this.Title = 'Unknown';
-    this.tags = [];
-    const obs$ = this.rfidHttpClient.getUnknownTags();
+    this.tagPaginatior = Pagination.empty();
+    const obs$ = this.rfidHttpClient.getUnknownTags(page, pageSize);
     this.progressService.executeWithProgress(obs$, data => {
-      this.unknown = [];
-      this.unknown.push(...data);
+      this.unknownPaginator = data;
     });
   }
 
-  public reloadDeletedTags(): void {
+  public reloadDeletedTags(page: number, pageSize: number): void {
+    if (!page) {
+      page = Pagination.defaultPage;
+    }
+
+    if (!pageSize) {
+      pageSize = Pagination.defaultPageSize;
+    }
+
     this.Title = 'Deleted';
-    this.unknown = [];
-    const obs$ = this.rfidHttpClient.getDeletedTags();
+    this.unknownPaginator = Pagination.empty();
+    const obs$ = this.rfidHttpClient.getDeletedTags(page, pageSize);
     this.progressService.executeWithProgress(obs$, data => {
-      this.tags = [];
-      this.tags.push(...data);
+      this.tagPaginatior = data;
     });
   }
 
@@ -87,6 +121,6 @@ export class TagListComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.reload();
+    this.reload(null);
   }
 }
