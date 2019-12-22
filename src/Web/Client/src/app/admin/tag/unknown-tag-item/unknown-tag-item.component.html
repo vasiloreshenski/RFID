@@ -11,5 +11,5 @@
     </mat-card-actions>
 </mat-card>
 <div *ngIf="tag.canEdit">
-    <app-tag-item [tag]="tag" (tagUpdateEvent)="update()"></app-tag-item>
+    <app-tag-item [tag]="tag" (tagUpdateEvent)="update()" [users]="users"></app-tag-item>
 </div>

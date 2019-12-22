@@ -2,13 +2,14 @@
     <mat-sidenav mode="side" opened>
         <mat-nav-list id="nav-list" class="flex v-center">
             <a mat-list-item mat-stroked-button color="primary" class="button-nav"
-                (click)="reloadActiveTags(null, null)">Active</a>
+                (click)="reloadActiveTags(null, null)" [disabled]="counts.active <= 0">Active ({{counts.active}})</a>
             <a mat-list-item mat-stroked-button color="primary" class="button-nav"
-                (click)="reloadInActiveTags(null, null)">In-Active</a>
+                (click)="reloadInActiveTags(null, null)" [disabled]="counts.inActive <= 0">In-Active
+                ({{counts.inActive}})</a>
             <a mat-list-item mat-stroked-button color="primary" class="button-nav"
-                (click)="reloadUnknownTags(null, null)">Unknown</a>
+                (click)="reloadUnknownTags(null, null)" [disabled]="counts.unknown <= 0">Unknown ({{counts.unknown}})</a>
             <a mat-list-item mat-stroked-button color="primary" class="button-nav"
-                (click)="reloadDeletedTags(null, null)">Deleted</a>
+                (click)="reloadDeletedTags(null, null)" [disabled]="counts.deleted <= 0">Deleted ({{counts.deleted}})</a>
         </mat-nav-list>
     </mat-sidenav>
     <mat-sidenav-content>
@@ -25,12 +26,13 @@
         </ng-container>
         <ng-container *ngIf="unknownPaginator.items.length > 0">
             <div class="pagination-container flex h-right">
-                <mat-paginator class="pagination" [length]="unknownPaginator.count" [pageSize]="unknownPaginator.pageSize"
-                    [pageIndex]="unknownPaginator.page" color="primary" (page)="reload($event)">
+                <mat-paginator class="pagination" [length]="unknownPaginator.count"
+                    [pageSize]="unknownPaginator.pageSize" [pageIndex]="unknownPaginator.page" color="primary"
+                    (page)="reload($event)">
                 </mat-paginator>
             </div>
             <div *ngFor="let ut of unknownPaginator.items">
-                <app-unknown-tag-item [unknownTag]="ut" (tagUpdateEvent)="reload()"></app-unknown-tag-item>
+                <app-unknown-tag-item [unknownTag]="ut" [users]="users" (tagUpdateEvent)="reload()"></app-unknown-tag-item>
             </div>
         </ng-container>
     </mat-sidenav-content>

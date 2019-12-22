@@ -239,5 +239,17 @@
                 }
             );
         }
+
+        [HttpGet("count")]
+        public async Task<IActionResult> GetCountsAsync()
+        {
+            return this.Ok(new
+            {
+                Active = await this.database.GetActiveAccessPointsCountAsync(),
+                InActive = await this.database.GetInActiveAccessPointsCountAsync(),
+                Deleted = await this.database.GetDeletedAccessPointsCountAsync(),
+                Unknown = await this.database.GetUnknownAccessPointsCountAsync()
+            });
+        }
     }
 }

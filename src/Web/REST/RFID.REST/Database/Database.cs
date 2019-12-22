@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Data;
     using System.Linq;
+    using System.Text;
     using System.Threading.Tasks;
     using Dapper;
     using RFID.REST.Areas.Administration.Models;
@@ -559,6 +560,21 @@
             return hasAccess;
         }
 
+        public async Task<String> ExportAsJsonAsync()
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var dbResult = await connection.ExecuteScalarAsync<(String tags, String accessPoints, String events, String accessLevels)>(
+                        "administration.export", 
+                        commandType: CommandType.StoredProcedure
+                );
+
+                var resultBuilder = new StringBuilder();
+                resultBuilder.Append($"{{ \"tags\": {dbResult.tags}, \"accessPoints\": {dbResult.accessLevels}, \"events\": {dbResult.events}, \"accessLevels\": {dbResult.accessLevels} }}");
+
+                return resultBuilder.ToString();
+            }
+        }
 
         private async Task<InsertOrUpdDbResult> InsertOrUpdateTagAsync(
             String number,

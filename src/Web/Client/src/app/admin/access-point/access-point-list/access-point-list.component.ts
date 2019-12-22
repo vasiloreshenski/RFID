@@ -1,3 +1,4 @@
+import { StateCount } from './../../../model/state-count';
 import { Pagination } from './../../../model/pagination';
 import { Observable } from 'rxjs';
 import { UnknownAccessPoint } from '../../../model/unknown-access-point';
@@ -20,6 +21,7 @@ export class AccessPointListComponent implements OnInit, AfterViewInit {
   public Title: string;
   public accessPointsPaginator: Pagination<AccessPoint> = Pagination.empty();
   public unknownAccessPointsPaginator: Pagination<UnknownAccessPoint> = Pagination.empty();
+  public counts: StateCount = StateCount.empty();
 
   constructor(
     private rfidHttpClient: RfidHttpClient,
@@ -42,6 +44,11 @@ export class AccessPointListComponent implements OnInit, AfterViewInit {
     } else {
       this.reloadActiveAccessPoints(ev.pageIndex, ev.pageSize);
     }
+    this.rfidHttpClient.getAccessPointCounts()
+      .subscribe(data => {
+        console.log(data);
+        this.counts = data;
+      });
   }
 
   public reloadActiveAccessPoints(page: number, pageSize: number): void {

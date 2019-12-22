@@ -1,14 +1,15 @@
 <mat-sidenav-container id="app-sidenav-container">
     <mat-sidenav mode="side" opened>
         <mat-nav-list id="app-side-nav">
+            <a mat-list-item mat-stroked-button color="primary" class="button-nav" (click)="reloadActiveAccessPoints()"
+                [disabled]="counts.active <= 0">Active ({{counts.active}})</a>
             <a mat-list-item mat-stroked-button color="primary" class="button-nav"
-                (click)="reloadActiveAccessPoints()">Active</a>
-            <a mat-list-item mat-stroked-button color="primary" class="button-nav"
-                (click)="reloadInActiveAccessPoints()">In-Active</a>
-            <a mat-list-item mat-stroked-button color="primary" class="button-nav"
-                (click)="reloadUnKnownAccessPoints()">Unknown</a>
-            <a mat-list-item mat-stroked-button color="primary" class="button-nav"
-                (click)="reloadDeletedAccessPoints()">Deleted</a>
+                (click)="reloadInActiveAccessPoints()" [disabled]="counts.inActive <= 0">In-Active
+                ({{counts.inActive}})</a>
+            <a mat-list-item mat-stroked-button color="primary" class="button-nav" (click)="reloadUnKnownAccessPoints()"
+                [disabled]="counts.unknown <= 0">Unknown ({{counts.unknown}})</a>
+            <a mat-list-item mat-stroked-button color="primary" class="button-nav" (click)="reloadDeletedAccessPoints()"
+                [disabled]="counts.deleted <= 0">Deleted ({{counts.deleted}})</a>
         </mat-nav-list>
     </mat-sidenav>
     <mat-sidenav-content>
@@ -28,8 +29,8 @@
         <ng-container *ngIf="unknownAccessPointsPaginator.items.length > 0">
             <div class="pagination-container flex h-right">
                 <mat-paginator class="pagination" [length]="unknownAccessPointsPaginator.count"
-                    [pageSize]="unknownAccessPointsPaginator.pageSize" [pageIndex]="unknownAccessPointsPaginator.page" color="primary"
-                    (page)="reloadAccessPoints($event)">
+                    [pageSize]="unknownAccessPointsPaginator.pageSize" [pageIndex]="unknownAccessPointsPaginator.page"
+                    color="primary" (page)="reloadAccessPoints($event)">
                 </mat-paginator>
             </div>
             <div *ngFor="let uap of unknownAccessPointsPaginator.items">

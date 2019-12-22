@@ -1,0 +1,18 @@
+Състояние на проблема по литературни данни
+* в тоза част се дава кратно теоретично описание всеки компунент на изследвана на дипломната работа
+
+1. представяне на системата
+* общо описание на ахитектурата на една систем за контрол на достъпа
+	- какво е четец
+	- какво е tag
+	- frontend
+	- backend
+	- начин на комуникация
+	- ардуино ?
+2. разглеждане на методики, техники, протоколи, технически решения
+3. представяне на други подобни решения
+
+
+https://en.wikipedia.org/wiki/Access_control#Access_control_system_topologies
+https://en.wikipedia.org/wiki/Smart_card
+https://www.hidglobal.com/sites/default/files/hid-understanding_card_data_formats-wp-en.pdf

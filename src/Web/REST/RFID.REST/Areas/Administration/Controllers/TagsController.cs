@@ -246,5 +246,17 @@
                 }
             );
         }
+
+        [HttpGet("count")]
+        public async Task<IActionResult> GetCountsAsync()
+        {
+            return this.Ok(new
+            {
+                Active = await this.database.GetActiveTagsCountAsync(),
+                InActive = await this.database.GetInActiveTagsCountAsync(),
+                Deleted = await this.database.GetDeletedTagsCountAsync(),
+                Unknown = await this.database.GetUnknownTagsCountAsync()
+            });
+        }
     }
 }

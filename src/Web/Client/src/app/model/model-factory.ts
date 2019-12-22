@@ -1,3 +1,4 @@
+import { StateCount } from './state-count';
 import { Pagination } from './pagination';
 import { DateTime } from './date-time';
 import { StatUserOverview } from './stat-user-overview';
@@ -172,5 +173,14 @@ export class ModelFactory {
             name: dateTime.day.toLocaleDateString(),
             value: dateTime.getTimeInMinutes()
         };
+    }
+
+    public static stateCountFromJson(json: any): StateCount {
+        const obj = new StateCount();
+        obj.active = json.active;
+        obj.deleted = json.deleted;
+        obj.inActive = json.inActive;
+        obj.unknown = json.unknown;
+        return obj;
     }
 }

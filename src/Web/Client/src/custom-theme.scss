@@ -118,3 +118,8 @@ body {
 .blur {
     filter: blur(8px);
 }
+.chart-container {
+    .trimmed-label > p {
+        line-height: 20px !important;
+    }    
+}

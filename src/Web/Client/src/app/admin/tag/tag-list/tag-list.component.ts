@@ -1,3 +1,4 @@
+import { StateCount } from './../../../model/state-count';
 import { PageEvent } from '@angular/material/paginator';
 import { Pagination } from './../../../model/pagination';
 import { ProgressService } from 'src/app/service/progress-service';
@@ -19,11 +20,11 @@ export class TagListComponent implements OnInit {
   public unknownPaginator: Pagination<UnknownTag> = Pagination.empty();
   public users: TagUser[] = [];
   public Title: String;
+  public counts: StateCount = StateCount.empty();
 
   constructor(
     private rfidHttpClient: RfidHttpClient,
     private progressService: ProgressService) {
-
   }
 
   public reload(ev: PageEvent): void {
@@ -42,6 +43,7 @@ export class TagListComponent implements OnInit {
       this.reloadActiveTags(ev.pageIndex, ev.pageSize);
     }
     this.reloadUsers();
+    this.reloadCounts();
   }
 
   public reloadActiveTags(page: number, pageSize: number): void {
@@ -118,6 +120,10 @@ export class TagListComponent implements OnInit {
         this.users = [];
         this.users.push(...data);
       });
+  }
+
+  private reloadCounts(): void {
+    this.rfidHttpClient.getTagsCounts().subscribe(data => this.counts = data);
   }
 
   ngOnInit() {

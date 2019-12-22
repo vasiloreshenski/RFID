@@ -960,6 +960,10 @@ if object_id('log.insert_client_log', 'P') is not null
 	drop procedure [log].insert_client_log;
 go
 
+if object_id('administration.export', 'P') is not null
+	drop procedure administration.export;
+go
+
 if type_id ('dbo.IntList') is not null
 	drop type dbo.IntList;
 go
@@ -1299,5 +1303,45 @@ create procedure [log].insert_client_log
 as
 begin
 	insert into [log].Client([Message], [TypeId]) values (@message, @type_id);
+end;
+go
+
+create procedure administration.export
+as
+begin
+	declare @tags_info nvarchar(max) = (
+		select
+			*
+		from access_control.Tags as tag
+		join access_control.Users as [user] on tag.UserId = [user].Id
+		for json auto
+	)
+
+	declare @access_points_info nvarchar(max) = (
+		select
+			*
+		from access_control.AccessPoints
+		for json auto
+	)
+
+	declare @events_info nvarchar(max) = (
+		select
+			*
+		from stat.Events
+		for json auto
+	)
+
+	declare @levels_info nvarchar(max) = (
+		select
+			*
+		from access_control.AccessLevels
+		for json auto
+	) 
+
+	select
+		@tags_info as tags,
+		@access_points_info as access_points_info,
+		@events_info as events_info,
+		@levels_info
 end;
 go

@@ -1,3 +1,4 @@
+import { TagUser } from 'src/app/model/tag-user';
 import { UnknownTag } from './../../../model/unknown-tag';
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
 import { Tag } from 'src/app/model/tag';
@@ -14,10 +15,12 @@ export class UnknownTagItemComponent implements OnInit {
 
   @Input()
   public unknownTag: UnknownTag;
+  @Input()
+  public users: TagUser[] = [];
   public tag: Tag = Tag.default();
 
   constructor() { }
-
+  
   public activate() {
     this.tag = Tag.default();
     this.tag.number = this.unknownTag.number;

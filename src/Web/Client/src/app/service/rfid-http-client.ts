@@ -1,3 +1,4 @@
+import { StateCount } from './../model/state-count';
 import { AccessPoint } from './../model/access-point';
 import { Pagination } from './../model/pagination';
 import { environment } from './../../environments/environment';
@@ -85,6 +86,14 @@ export class RfidHttpClient {
         return result$;
     }
 
+    public getAccessPointCounts(): Observable<StateCount> {
+        const url = new URL('/administration/api/accesspoint/count', this.API_URL).href;
+        const result$ = this.http.get<any>(url).pipe(
+            map(json => ModelFactory.stateCountFromJson(json))
+        );
+        return result$;
+    }
+
     public getActiveTags(page: number, pageSize: number): Observable<Pagination<Tag>> {
         const url = new URL(`/administration/api/tags/active?page=${page}&pageSize=${pageSize}`, this.API_URL).href;
         const result$ = this.http.get<any>(url).pipe(
@@ -124,6 +133,14 @@ export class RfidHttpClient {
         const url = new URL(`/administration/api/tags/unknown?page=${page}&pageSize=${pageSize}`, this.API_URL).href;
         const result$ = this.http.get<any>(url).pipe(
             map(json => ModelFactory.paginationFromJson(json, ModelFactory.unknownTagFromJson))
+        );
+        return result$;
+    }
+
+    public getTagsCounts(): Observable<StateCount> {
+        const url = new URL('/administration/api/tags/count', this.API_URL).href;
+        const result$ = this.http.get<any>(url).pipe(
+            map(json => ModelFactory.stateCountFromJson(json))
         );
         return result$;
     }
