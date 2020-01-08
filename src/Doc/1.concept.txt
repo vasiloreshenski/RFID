@@ -9,10 +9,27 @@
 	- backend
 	- начин на комуникация
 	- ардуино ?
-2. разглеждане на методики, техники, протоколи, технически решения
+2. разглеждане на методики, 
+техники, 
+протоколи, 
+технически решения, 
+топология, 
+протоколи за комуникация между отделните компоненти, 
+стандарти / формати за кодиране на данни (Wigand 26 bit for example)
+
 3. представяне на други подобни решения
 
 
 https://en.wikipedia.org/wiki/Access_control#Access_control_system_topologies
 https://en.wikipedia.org/wiki/Smart_card
 https://www.hidglobal.com/sites/default/files/hid-understanding_card_data_formats-wp-en.pdf
+https://en.wikipedia.org/wiki/Card_reader
+https://www.scienceabc.com/innovation/how-magnetic-strips-stripes-tape-on-credit-room-key-cards-work.html
+https://www.machinedesign.com/learning-resources/engineering-essentials/article/21833424/brushing-up-on-wiegand-the-man-the-effect-and-the-wire-that-changed-engineering
+https://en.wikipedia.org/wiki/Resonant_inductive_coupling
+https://en.wikipedia.org/wiki/Contactless_smart_card
+https://en.wikipedia.org/wiki/Proximity_card
+https://e-university.tu-sofia.bg/e-publ/files/2594_Wireless%20transfer%20Dx%202016.05%20v2.2.pdf
+https://en.wikipedia.org/wiki/IP_reader
+https://en.wikipedia.org/wiki/Representational_state_transfer
+https://en.wikipedia.org/wiki/Website
