@@ -4,9 +4,10 @@
 2. начин на работа
 3. комуникация м/у модулите
 4. комуникация м/у сървър и ардуино
-5. методика за проектиране
-6. кутия ?
-7. обосновка за избора
+5. сигурност ?
+6. методика за проектиране
+7. кутия ?
+8. обосновка за избора
 * може да се направи частично сравнение с други системи
   например: избрана е wifi комуникация защото има по - лесно инфраструктурно интегриране
 	- програмен език
@@ -23,3 +24,30 @@
 •	Централизация – прости четци и сложна инфраструктура изградена само веднъж (сървър)
 
 недостатъци
+
+
+https://www.researchgate.net/publication/304417666_Electromagnetic_field_as_the_wireless_transporter_of_energy
+https://en.wikipedia.org/wiki/Wi-Fi
+https://searchnetworking.techtarget.com/definition/TCP-IP
+https://en.wikipedia.org/wiki/Transmission_Control_Protocol
+https://en.wikipedia.org/wiki/Internet_Protocol
+https://searchnetworking.techtarget.com/definition/packet
+https://www.controleng.com/articles/wi-fi-and-the-osi-model/
+
+https://www.researchgate.net/publication/4334707_Antennas_and_propagation_in_UHF_RFID_systems
+https://www.diva-portal.org/smash/get/diva2:373363/FULLTEXT02.pdf
+https://pdfs.semanticscholar.org/01ec/d02ebf75280f22b984386eeabe20e1bae8a2.pdf
+https://www.researchgate.net/publication/313935859_Three-Phase_Magnetic_Field_Tested_in_Wireless_Power_Transfer_System
+https://en.wikipedia.org/wiki/Wireless_power_transfer
+https://my.eng.utah.edu/~mlewis/ref/NFC/AN1445.pdf
+
+https://books.google.bg/books?id=jL0IBgAAQBAJ&pg=PA78&lpg=PA78&dq=ISO/IEC+14443+resonant+inductive+coupling&source=bl&ots=WoSGxqiOpD&sig=ACfU3U3bFkFGHTHMrA3BW-Lsqcvxc5Rizw&hl=en&sa=X&ved=2ahUKEwiMm8LM84PnAhWowqYKHc5YDgwQ6AEwAHoECAkQAQ#v=onepage&q=ISO%2FIEC%2014443%20resonant%20inductive%20coupling&f=false
+
+https://iopscience.iop.org/article/10.1088/1755-1315/69/1/012197/pdf
+sensors-14-11522.pdf in Downloads
+
+https://www.electronicdesign.com/technologies/communications/article/21796484/understanding-wireless-range-calculations
+
+https://www.analogictips.com/rfid-tag-and-reader-antennas/
+https://www.autodesk.com/products/eagle/blog/rfid-works-antenna-design/
+http://ww1.microchip.com/downloads/en/appnotes/00710c.pdf

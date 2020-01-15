@@ -35,7 +35,7 @@
         /// </returns>
         [HttpPost("generate")]
         [AllowAnonymous]
-        public async Task<IActionResult> GenerateTokenAsync(TokenGenerationRequestModel model)
+        public async Task<IActionResult> GenerateTokenAsync([FromBody]TokenGenerationRequestModel model)
         {
             var command = this.commandFactory.CreateGenerateAuthTokenCommand();
             var commandResult = await command.GenerateTokenAsync(model);
