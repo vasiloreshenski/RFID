@@ -1,14 +1,14 @@
 <mat-sidenav-container id="app-sidenav-container">
     <mat-sidenav mode="side" opened>
         <mat-nav-list id="app-side-nav">
-            <a mat-list-item mat-stroked-button color="primary" class="button-nav" (click)="reloadActiveAccessPoints()"
+            <a mat-list-item mat-stroked-button color="primary" class="button-nav" (click)="reloadActiveAccessPoints(0, 5)"
                 [disabled]="counts.active <= 0">Active ({{counts.active}})</a>
             <a mat-list-item mat-stroked-button color="primary" class="button-nav"
-                (click)="reloadInActiveAccessPoints()" [disabled]="counts.inActive <= 0">In-Active
+                (click)="reloadInActiveAccessPoints(0, 5)" [disabled]="counts.inActive <= 0">In-Active
                 ({{counts.inActive}})</a>
-            <a mat-list-item mat-stroked-button color="primary" class="button-nav" (click)="reloadUnKnownAccessPoints()"
+            <a mat-list-item mat-stroked-button color="primary" class="button-nav" (click)="reloadUnKnownAccessPoints(0, 5)"
                 [disabled]="counts.unknown <= 0">Unknown ({{counts.unknown}})</a>
-            <a mat-list-item mat-stroked-button color="primary" class="button-nav" (click)="reloadDeletedAccessPoints()"
+            <a mat-list-item mat-stroked-button color="primary" class="button-nav" (click)="reloadDeletedAccessPoints(0, 5)"
                 [disabled]="counts.deleted <= 0">Deleted ({{counts.deleted}})</a>
         </mat-nav-list>
     </mat-sidenav>

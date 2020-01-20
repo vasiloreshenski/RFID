@@ -118,7 +118,7 @@
             {
                 var date = DateTime.Now.AddMonths(-1);
                 // simulate for fulll month
-                while(date.Month < DateTime.Now.Month || (date.Month == DateTime.Now.Month && date.Day <= DateTime.Now.Day))
+                while((date.Month < DateTime.Now.Month || date.Year < DateTime.Now.Year) || (date.Month == DateTime.Now.Month && date.Day <= DateTime.Now.Day))
                 {
                     // get in
                     var entranceAccessPoint = Shuffle(accessPointInfo.Where(x => x.isActive && x.direction == AccessPointDirectionType.Entrance));

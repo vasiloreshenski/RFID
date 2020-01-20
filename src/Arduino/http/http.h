@@ -19,6 +19,7 @@ public:
 private:
   SoftwareSerial wifiSerial;
   HttpResponse setStaticMode();
+  HttpResponse setActiveMode();
   HttpResponse connectToWifi();
   HttpResponse openConnection();
   HttpResponse closeConnection();

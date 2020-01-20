@@ -71,11 +71,5 @@
                 return this.NotFound();
             }
         }
-
-        [HttpGet("test")]
-        public IActionResult Test()
-        {
-            return this.Ok();
-        }
     }
 }

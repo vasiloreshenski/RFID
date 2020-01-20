@@ -1,4 +1,4 @@
-#include<SoftwareSerial.h>
+#include <SoftwareSerial.h>
 #include <http.h>
 #include <SPI.h>
 #include <MFRC522.h>
@@ -27,17 +27,14 @@ void setup() {
 }
 
 void loop() {
-  if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
+  if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {    
     String tag_number = get_uid_code(rfid.uid.uidByte, rfid.uid.size);
     if(tag_number && tag_number.length() != 0) {
-      Serial.println(tag_number);
       if(check_access(tag_number)) {
         green_light_led();
-        Serial.println("green");
       }
       else {
         red_light_led();
-        Serial.println("red");
       }
     }
   }
