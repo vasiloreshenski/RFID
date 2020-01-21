@@ -27,7 +27,8 @@ void setup() {
 }
 
 void loop() {
-  if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {    
+  if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {   
+    Serial.println(millis());
     String tag_number = get_uid_code(rfid.uid.uidByte, rfid.uid.size);
     if(tag_number && tag_number.length() != 0) {
       if(check_access(tag_number)) {
@@ -36,6 +37,7 @@ void loop() {
       else {
         red_light_led();
       }
+      Serial.println(millis());
     }
   }
 }

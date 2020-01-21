@@ -5,16 +5,17 @@
 const String OK = "OK";
 const String ERR = "ERR";
 const String CLOSED = "CLOSED";
-// const String API_URL = "192.168.0.105";
+const String API_URL = "192.168.0.105";
+const String API_PORT = "443";
+// const String API_URL = "desktop-sb3j0h0";
 // const String API_PORT = "8080";
-const String API_URL = "https://desktop-sb3j0h0";
 
 bool Http::init()
 {
 	wifiSerial.begin(9600);
 
 	bool connected = setActiveMode().success;
-	// && connectToWifi().success;
+	// bool connected = setStaticMode().success && connectToWifi().success;
 	return connected;
 }
 
@@ -51,7 +52,7 @@ HttpResponse Http::setStaticMode()
 HttpResponse Http::setActiveMode()
 {
 	HttpResponse response = processAtCommand("AT+CWMODE=2", &endsWithOk, &endsWithErrorOrFail);
-	response = processAtCommand("AT+CWSAP=\"arduino-master\",\"1234test\",5,3", &endsWithOk, &endsWithErrorOrFail);
+	response = processAtCommand("AT+CWSAP=\"arduino-master\",\"1234test\",6,3", &endsWithOk, &endsWithErrorOrFail);
 	response = processAtCommand("AT+CIPAP=\"192.168.0.100\"", &endsWithOk, &endsWithErrorOrFail);
 
 	return response;
@@ -65,7 +66,7 @@ HttpResponse Http::connectToWifi()
 HttpResponse Http::openConnection()
 {
 	// return processAtCommand("AT+CIPSTART=\"TCP\",\"" + API_URL + "\"," + API_PORT, &endsWithOk, &endsWithErrorOrFail);
-  return processAtCommand("AT+CIPSTART=\"TCP\",\"" + API_URL + "\"", &endsWithOk, &endsWithErrorOrFail);
+  	return processAtCommand("AT+CIPSTART=\"SSL\",\"" + API_URL + "\"," + API_PORT, &endsWithOk, &endsWithErrorOrFail);
 }
 
 HttpResponse Http::closeConnection()
@@ -116,9 +117,8 @@ HttpResponse Http::processAtCommand(String command, bool(*successPredicate)(Stri
 			content += " " + lastLine;
 		}
 		execute = successPredicate(lastLine) == false && failPredicate(lastLine) == false;
-		delay(30);
+		// delay(30);
 	}
-	Serial.println(content);
 	if (successPredicate(lastLine))
 	{
 		success = true;
@@ -139,6 +139,5 @@ int Http::calculateRequestLen(String command)
 
 String Http::createGetCommandFromPath(String path)
 {
-	// return "GET " + path + " HTTP/1.1\r\nHost: " + API_URL + ":" + API_PORT + "\r\n";
-  return "GET " + path + " HTTP/1.1\r\nHost: " + API_URL + "\r\n";
+	return "GET " + path + " HTTP/1.1\r\nHost: " + API_URL + ":" + API_PORT + "\r\n";
 }
