@@ -29,9 +29,7 @@ export class TagListComponent implements OnInit {
 
   public reload(ev: PageEvent): void {
     if (!ev) {
-      ev = new PageEvent();
-      ev.pageIndex = Pagination.defaultPage;
-      ev.pageSize = Pagination.defaultPageSize;
+      ev = this.createPageEventFromPagination();
     }
     if (this.tagPaginatior.items.some(t => t.isDeleted)) {
       this.reloadDeletedTags(ev.pageIndex, ev.pageSize);
@@ -124,6 +122,14 @@ export class TagListComponent implements OnInit {
 
   private reloadCounts(): void {
     this.rfidHttpClient.getTagsCounts().subscribe(data => this.counts = data);
+  }
+
+  private createPageEventFromPagination(): PageEvent {
+    if (this.unknownPaginator.items.length > 0) {
+      return this.unknownPaginator.createPageEvent();
+    } else {
+      return this.tagPaginatior.createPageEvent();
+    }
   }
 
   ngOnInit() {

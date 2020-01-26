@@ -19,17 +19,21 @@ export class StatUserOverviewComponent implements OnInit {
 
   ngOnInit() {
     this.overview = new StatUserOverview();
-    this.rfidHttpClient.getStatUserOverview().subscribe(
-      response => {
-        this.overview = response;
-        this.data = [];
-        this.data.push(
-          { 'name': 'Avg. entrance time', 'value': response.avgEntranceTime.time },
-          { 'name': 'Avg. exit time', 'value': response.avgExitTime.time },
-          { 'name': 'Avg. work hour norm', 'value': response.avgWorkHourNorm.time }
-        );
-        this.progressService.stopLoading();
-      }
-    );
+    const obs$ = this.rfidHttpClient.getStatUserOverview();
+    this.progressService.executeWithProgress(obs$, response => {
+      this.overview = response;
+      this.data = [];
+      this.data.push(
+        { 'name': 'Avg. entrance time', 'value': response.avgEntranceTime.time },
+        { 'name': 'Avg. exit time', 'value': response.avgExitTime.time },
+        { 'name': 'Avg. work hour norm', 'value': response.avgWorkHourNorm.time }
+      );
+    });
+    // .subscribe(
+    //   response => {
+
+    //     this.progressService.stopLoading();
+    //   }
+    // );
   }
 }

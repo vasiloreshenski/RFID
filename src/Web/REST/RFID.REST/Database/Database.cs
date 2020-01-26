@@ -5,6 +5,8 @@
     using System.Data;
     using System.Linq;
     using System.Text;
+    using System.Text.Json;
+    using System.Text.Json.Serialization;
     using System.Threading.Tasks;
     using Dapper;
     using RFID.REST.Areas.Administration.Models;
@@ -422,6 +424,28 @@
             }
         }
 
+        public async Task<IReadOnlyCollection<EventResponseModel>> GetEventsAsync()
+        {
+            using (var connection = await this.connectionFactory.CreateConnectionAsync())
+            {
+                var dbResult = await connection.QueryAsync<EventResponseModel>(@"select x.Id,
+                     x.TagNumber,
+                     x.TagLevelId,
+                     x.TagIsActive,
+                     x.TagIsDeleted,
+                     x.TagIsUnknown,
+                     x.UserId,
+                     x.AccessPointSerialNumber,
+                     x.AccessPointLevelId,
+                     x.AccessPointDirectionId,
+                     x.AccessPointIsActive,
+                     x.AccessPointIsDeleted,
+                     x.AccessPointIsUnknown,
+                     x.CreateDate from stat.Events as x");
+
+                return dbResult.ToList();
+            }
+        }
 
         public Task<IReadOnlyCollection<TagResponseModel>> GetActiveTagsAsync(int? page, int? pageSize)
         {
@@ -564,15 +588,34 @@
         {
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
-                var dbResult = await connection.ExecuteScalarAsync<(String tags, String accessPoints, String events, String accessLevels)>(
-                        "administration.export", 
-                        commandType: CommandType.StoredProcedure
-                );
-
                 var resultBuilder = new StringBuilder();
-                resultBuilder.Append($"{{ \"tags\": {dbResult.tags}, \"accessPoints\": {dbResult.accessLevels}, \"events\": {dbResult.events}, \"accessLevels\": {dbResult.accessLevels} }}");
+                resultBuilder.Append("{");
+
+                await AppendAsJsonAsync(resultBuilder, "activeTags", () => this.GetActiveTagsAsync(null, null));
+                await AppendAsJsonAsync(resultBuilder, "inActiveTags", () => this.GetInActiveTagsAsync(null, null));
+                await AppendAsJsonAsync(resultBuilder, "deletedTags", () => this.GetDeletedTagsAsync(null, null));
+                await AppendAsJsonAsync(resultBuilder, "unknownTags", () => this.GetUnKnownTagsAsync(null, null));
+                await AppendAsJsonAsync(resultBuilder, "users", () => this.GetTagsUsersAsync());
+                await AppendAsJsonAsync(resultBuilder, "activeAccessPoints", () => this.GetActiveAccessPointsAsync(null, null));
+                await AppendAsJsonAsync(resultBuilder, "inActiveAccessPoints", () => this.GetInActiveAccessPointsAsync(null, null));
+                await AppendAsJsonAsync(resultBuilder, "deletedAccessPoints", () => this.GetDeletedAccessPointsAsync(null, null));
+                await AppendAsJsonAsync(resultBuilder, "unknownTags", () => this.GetUnKnownTagsAsync(null, null));
+                await AppendAsJsonAsync(resultBuilder, "events", () => this.GetEventsAsync());
+
+                resultBuilder.Append("}");
 
                 return resultBuilder.ToString();
+            }
+
+            async Task AppendAsJsonAsync<T>(StringBuilder resultBuilder, String identity, Func<Task<IReadOnlyCollection<T>>> factory)
+            {
+                var objs = await factory();
+                var json = JsonSerializer.Serialize(objs);
+                if (resultBuilder.Length > 1)
+                {
+                    resultBuilder.Append(", ");
+                }
+                resultBuilder.Append($"\"{identity}\": {json}");
             }
         }
 

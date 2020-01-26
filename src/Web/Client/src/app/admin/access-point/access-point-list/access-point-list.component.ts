@@ -29,9 +29,7 @@ export class AccessPointListComponent implements OnInit, AfterViewInit {
 
   public reloadAccessPoints(ev: PageEvent): void {
     if (!ev) {
-      ev = new PageEvent();
-      ev.pageIndex = Pagination.defaultPage;
-      ev.pageSize = Pagination.defaultPageSize;
+      ev = this.createPageEventFromPagination();
     }
     if (this.accessPointsPaginator.items.some(x => x.isDeleted)) {
       this.reloadDeletedAccessPoints(ev.pageIndex, ev.pageSize);
@@ -113,6 +111,14 @@ export class AccessPointListComponent implements OnInit, AfterViewInit {
     this.progressService.executeWithProgress(obs$, data => {
       this.unknownAccessPointsPaginator = data;
     });
+  }
+
+  private createPageEventFromPagination(): PageEvent {
+    if (this.unknownAccessPointsPaginator.items.length > 0) {
+      return this.unknownAccessPointsPaginator.createPageEvent();
+    } else {
+      return this.accessPointsPaginator.createPageEvent();
+    }
   }
 
   ngOnInit() {

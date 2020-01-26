@@ -17,8 +17,10 @@ export class NavigationService {
         router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
                 this.NavigatedEvent.emit(this.currentPath());
-            } else if (e instanceof NavigationStart) {
-                this.progressService.startLoading();
+            } else if (e instanceof NavigationStart && (this.currentPath() !== '/admin/stat/user' ? true : e.url !== '/admin/stat')) {
+                if (this.currentPath() !== e.url) {
+                    this.progressService.startLoading();
+                }
             }
         });
     }

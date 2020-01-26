@@ -1,6 +1,8 @@
+import { RfidHttpClient } from './../../service/rfid-http-client';
 import { ProgressService } from './../../service/progress-service';
 import { NavigationService } from './../../service/navigation-service';
 import { Component, OnInit, HostBinding } from '@angular/core';
+import { saveAs } from 'file-saver';
 
 @Component({
   selector: 'app-layout',
@@ -9,18 +11,19 @@ import { Component, OnInit, HostBinding } from '@angular/core';
 })
 export class LayoutComponent implements OnInit {
   @HostBinding('id') id = 'app-layout';
-  constructor(public navigationService: NavigationService, private progressService: ProgressService) { }
+  constructor(
+    public navigationService: NavigationService,
+    private progressService: ProgressService,
+    private http: RfidHttpClient) { }
 
   public Title: String;
   public isLoading = true;
 
-  ngOnInit() {
-    this.navigationService.NavigatedEvent.subscribe(path => this.setTitleFromPath(path));
-    // for cases when the user navigates direclty to the page
-    this.setTitleFromPath(this.navigationService.currentPath());
-    this.progressService.loading$.subscribe(value => {
-      this.isLoading = value;
-      console.log('is loading: ' + value);
+  public export(): void {
+    const obs$ = this.http.export();
+    this.progressService.executeWithProgress(obs$, data => {
+      const blob = new Blob([data], { type: 'application/json' });
+      saveAs(blob, 'export.json');
     });
   }
 
@@ -32,5 +35,14 @@ export class LayoutComponent implements OnInit {
     } else if (path === NavigationService.TagManagmentRoute) {
       this.Title = 'Tag managment';
     }
+  }
+
+  ngOnInit() {
+    this.navigationService.NavigatedEvent.subscribe(path => this.setTitleFromPath(path));
+    // for cases when the user navigates direclty to the page
+    this.setTitleFromPath(this.navigationService.currentPath());
+    this.progressService.loading$.subscribe(value => {
+      this.isLoading = value;
+    });
   }
 }

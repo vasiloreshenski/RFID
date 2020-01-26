@@ -279,4 +279,15 @@ export class RfidHttpClient {
         const result$ = this.http.post(url, { message: message }, { observe: 'response', headers: new HttpHeaders({ 'Content-Type': 'application/json' }) });
         return result$;
     }
+
+    public export(): Observable<string> {
+        const url = new URL('/administration/api/export', this.API_URL).href;
+        const result$ = this.http.get(url, { observe: 'response' })
+        .pipe(
+            map(r => {
+                return JSON.stringify(r.body);
+            })
+        );
+        return result$;
+    }
 }

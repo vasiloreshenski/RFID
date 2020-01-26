@@ -24,6 +24,8 @@ void setup() {
   rfid.PCD_Init();
   http.init();
   indicate_init_led();
+
+  rfid.PCD_SetAntennaGain(rfid.RxGain_max);
 }
 
 void loop() {
