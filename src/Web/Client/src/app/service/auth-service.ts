@@ -11,18 +11,28 @@ export class AuthService {
 
     isAuthenticated(): boolean {
         if (localStorage.getItem(AuthService.localStorageKey)) {
+            const token = JSON.parse(localStorage.getItem(AuthService.localStorageKey));
+            if (token.dateTimeExpirationInMs <= new Date().getUTCMilliseconds) {
+                return false;
+            }
             return true;
         }
         return false;
     }
 
     issueToken(email: string, password: string): Observable<AuthTokenResponseModel> {
-        const authToken$ = this.rfidHttp.generateAuthToken(email, password);
-        authToken$.subscribe(token => {
-            localStorage.setItem(AuthService.localStorageKey, JSON.stringify(token));
+        const obs$ = new Observable<AuthTokenResponseModel>((obs) => {
+            const authToken$ = this.rfidHttp.generateAuthToken(email, password);
+            authToken$.subscribe(token => {
+                localStorage.setItem(AuthService.localStorageKey, JSON.stringify(token));
+                obs.next(token);
+            });
+            authToken$.subscribe(_ => { });
+
+            return { unsubscribe() { } };
         });
 
-        return authToken$;
+        return obs$;
     }
 
     token(): string {

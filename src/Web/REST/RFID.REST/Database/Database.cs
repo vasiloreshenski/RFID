@@ -107,7 +107,7 @@
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
                 return await connection.ExecuteScalarAsync<AccessLevel?>(
-                    "select top 1 x.LevelId from access_control.AccessPoints as x where x.SerialNumber=@serial_number",
+                    "select top 1 x.LevelId from access_control.AccessPoints as x where x.SerialNumber=@serial_number and x.isDeleted=0 and x.isActive=1",
                     param: new { @serial_number = serialNumber }
                 );
             }
@@ -122,7 +122,7 @@
         {
             using (var connection = await this.connectionFactory.CreateConnectionAsync())
             {
-                return await connection.ExecuteScalarAsync<AccessLevel?>("select top 1 x.LevelId from access_control.Tags as x where x.Number=@number", param: new { @number = number });
+                return await connection.ExecuteScalarAsync<AccessLevel?>("select top 1 x.LevelId from access_control.Tags as x where x.Number=@number and x.isDeleted=0 and x.isActive=1", param: new { @number = number });
             }
         }
 

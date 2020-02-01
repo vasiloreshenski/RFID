@@ -24,6 +24,7 @@
             this.Token = token;
             this.ExpireInSeconds = expireInSeconds;
             this.RefreshToken = refereshToken;
+            this.DateTimeExpirationInMs = new DateTimeOffset(DateTime.UtcNow.AddSeconds(expireInSeconds)).ToUnixTimeMilliseconds();
         }
 
         /// <summary>
@@ -35,6 +36,11 @@
         /// Token expiration in seconds
         /// </summary>
         public int ExpireInSeconds { get; }
+
+        /// <summary>
+        /// Date and Time of expiration represented as miliseconds
+        /// </summary>
+        public long DateTimeExpirationInMs { get; }
 
         /// <summary>
         /// Value for the referesh token

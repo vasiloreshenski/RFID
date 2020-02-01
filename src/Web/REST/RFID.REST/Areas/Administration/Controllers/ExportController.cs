@@ -12,7 +12,7 @@
     [ApiController]
     [Route("[area]/api/export")]
     [Area("administration")]
-    // [Authorize(Policy = PolicyNames.AdminPolicy)]
+    [Authorize(Policy = PolicyNames.AdminPolicy)]
     public class ExportController : Controller
     {
         private readonly Database database;
