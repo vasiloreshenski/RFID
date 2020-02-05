@@ -119,6 +119,9 @@ HttpResponse Http::processAtCommand(String command, bool(*successPredicate)(Stri
 		execute = successPredicate(lastLine) == false && failPredicate(lastLine) == false;
 		// delay(30);
 	}
+
+	Serial.println(content);
+
 	if (successPredicate(lastLine))
 	{
 		success = true;
