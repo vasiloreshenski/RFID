@@ -1,0 +1,1 @@
+C:\Users\vasil\Documents\tools\PSTools\psexec -u MicrosoftAccount\vastur@abv.bg -p 9006241948A \\192.168.0.105 -w C:\Users\vastu\OneDrive\Документи\docker\projects\rfid\db\ C:\Users\vastu\OneDrive\Документи\docker\projects\rfid\db\mssql-docker-create-container.bat
